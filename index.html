@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Matthosify - Music for Everyone</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <!-- Main Container -->
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">
+          <img class="matthosify-logo" src="M.jpeg" alt="Matthosify" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div class="matthosify-logo-fallback">
+            <svg viewBox="0 0 40 40" fill="none" width="40" height="40">
+              <rect width="40" height="40" rx="10" fill="#1ed760"/>
+              <path d="M8 9V32L20 17L32 32V9" stroke="black" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="36" cy="30" r="3.5" fill="black"/>
+            </svg>
+          </div>
+        </div>
+        <h1 class="logo-text">Matthosify</h1>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#" class="nav-link active" data-page="home">
+          <i class="fa-solid fa-house"></i>
+          <span>Home</span>
+        </a>
+        <a href="#" class="nav-link" data-page="search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span>Search</span>
+        </a>
+        <a href="#" class="nav-link" data-page="library">
+          <i class="fa-solid fa-book"></i>
+          <span>Your Library</span>
+        </a>
+      </nav>
+
+      <div class="playlist-section">
+        <div class="playlist-actions">
+          <button class="btn-create-playlist" title="Create playlist">
+            <i class="fa-solid fa-plus"></i>
+          </button>
+          <button class="btn-liked-songs" title="Liked Songs">
+            <i class="fa-solid fa-heart"></i>
+          </button>
+        </div>
+        <div class="playlists" id="playlists">
+          <a href="#" class="playlist-item active" data-playlist="my-library">
+            <i class="fa-solid fa-music"></i>
+            <span>My Music</span>
+          </a>
+          <a href="#" class="playlist-item" data-playlist="favorites">
+            <i class="fa-solid fa-heart"></i>
+            <span>Favorites</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="#" class="sidebar-settings-link" data-page="settings"><i class="fa-solid fa-gear"></i> Settings</a>
+        <a href="#" style="margin-top:8px;"><i class="fa-solid fa-circle-down"></i> Install App</a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="top-bar">
+        <div class="nav-buttons">
+          <button class="nav-btn" id="backBtn"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="nav-btn" id="forwardBtn"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="top-bar-right">
+          <button class="btn-upgrade">Upgrade</button>
+          <div class="profile-dropdown">
+            <button class="btn-profile" id="profileBtn">
+              <i class="fa-solid fa-user"></i>
+              <span id="profileName">Matthosify User</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div class="profile-menu" id="profileMenu">
+              <a href="#" data-page="settings" onclick="navigateTo('settings');closeProfileMenu();"><i class="fa-solid fa-user-pen"></i> Profile</a>
+              <a href="#" data-page="settings" onclick="navigateTo('settings');closeProfileMenu();"><i class="fa-solid fa-gear"></i> Settings</a>
+              <hr>
+              <a href="#" id="exportLibraryBtn"><i class="fa-solid fa-download"></i> Export Library</a>
+              <a href="#" id="importLibraryBtn"><i class="fa-solid fa-upload"></i> Import Library</a>
+              <hr>
+              <a href="#" class="danger" id="clearAllBtn"><i class="fa-solid fa-trash-can"></i> Clear All Data</a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Home Page -->
+      <section class="page active" id="page-home">
+        <div class="greeting">
+          <h2 id="greetingText">Good evening</h2>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="quick-links">
+          <div class="quick-link-card" data-page="library">
+            <div class="card-image">
+              <i class="fa-solid fa-music"></i>
+            </div>
+            <span>Your Library</span>
+          </div>
+          <div class="quick-link-card" data-page="liked">
+            <div class="card-image liked">
+              <i class="fa-solid fa-heart"></i>
+            </div>
+            <span>Liked Songs</span>
+          </div>
+          <div class="quick-link-card" data-action="add-song">
+            <div class="card-image add">
+              <i class="fa-solid fa-plus"></i>
+            </div>
+            <span>Add Song</span>
+          </div>
+          <div class="quick-link-card" data-playlist="my-music">
+            <div class="card-image recent">
+              <i class="fa-solid fa-clock-rotate"></i>
+            </div>
+            <span>Recently Played</span>
+          </div>
+        </div>
+
+        <!-- Recently Played -->
+        <section class="content-section">
+          <div class="section-header">
+            <h3>Recently Played</h3>
+          </div>
+          <div class="recently-played-grid"></div>
+        </section>
+
+        <!-- Your Songs Section -->
+        <section class="content-section">
+          <div class="section-header">
+            <h3>Your Songs</h3>
+            <a href="#" class="show-all">Show all</a>
+          </div>
+          <div class="song-grid" id="songGrid-home">
+            <!-- Songs will be rendered here -->
+          </div>
+        </section>
+
+        <!-- Made for You -->
+        <section class="content-section">
+          <div class="section-header">
+            <h3>Made for You</h3>
+            <a href="#" class="show-all">Show all</a>
+          </div>
+          <div class="album-grid">
+            <div class="album-card">
+              <div class="album-image">
+                <i class="fa-solid fa-headphones"></i>
+                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
+              </div>
+              <p class="album-title">Your Daily Mix</p>
+              <p class="album-desc">Songs you added recently</p>
+            </div>
+            <div class="album-card">
+              <div class="album-image">
+                <i class="fa-solid fa-star"></i>
+                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
+              </div>
+              <p class="album-title">Favorites Mix</p>
+              <p class="album-desc">Your most played songs</p>
+            </div>
+            <div class="album-card">
+              <div class="album-image">
+                <i class="fa-solid fa-clock"></i>
+                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
+              </div>
+              <p class="album-title">Recently Added</p>
+              <p class="album-desc">Latest additions to library</p>
+            </div>
+            <div class="album-card">
+              <div class="album-image">
+                <i class="fa-solid fa-record-vinyl"></i>
+                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
+              </div>
+              <p class="album-title">Matthosify Weekly</p>
+              <p class="album-desc">Your weekly recommendation</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- Search Page -->
+      <section class="page" id="page-search">
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="What do you want to listen to?" autocomplete="off">
+          </div>
+        </div>
+        <div class="browse-section">
+          <h3>Browse All</h3>
+          <div class="browse-grid">
+            <div class="browse-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+              <span>Podcasts</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+              <span>Made For You</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+              <span>Charts</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+              <span>New Releases</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+              <span>Discover</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
+              <span>Live Events</span>
+            </div>
+          </div>
+        </div>
+        <div class="search-results" id="searchResults" style="display: none;">
+          <h3>Search Results</h3>
+          <div class="song-list" id="searchResultsList"></div>
+        </div>
+      </section>
+
+      <!-- Library Page -->
+      <section class="page" id="page-library">
+        <div class="library-header">
+          <div class="library-header-left">
+            <h2>Your Library</h2>
+            <div class="library-stats" id="libraryStats"></div>
+          </div>
+          <div class="library-actions">
+            <button class="btn-library-action" id="addSongBtn"><i class="fa-solid fa-plus"></i> Add Song</button>
+            <button class="btn-library-action" id="importBtn"><i class="fa-solid fa-file-import"></i> Import</button>
+          </div>
+        </div>
+        <div class="library-filters">
+          <button class="filter-btn active">Songs</button>
+          <button class="filter-btn">Playlists</button>
+          <button class="filter-btn">Albums</button>
+          <button class="filter-btn">Artists</button>
+        </div>
+        <div class="library-songs">
+          <table class="song-table" id="libraryTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Artist</th>
+                <th>Album</th>
+                <th>Duration</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="libraryBody">
+              <!-- Songs rendered here -->
+            </tbody>
+          </table>
+        </div>
+      <!-- Settings Page -->
+      <section class="page" id="page-settings">
+        <div class="settings-header">
+          <h2>Settings</h2>
+        </div>
+        <div class="settings-tabs">
+          <button class="settings-tab active" data-tab="profile"><i class="fa-solid fa-user"></i> Profile</button>
+          <button class="settings-tab" data-tab="audio"><i class="fa-solid fa-sliders"></i> Audio</button>
+          <button class="settings-tab" data-tab="appearance"><i class="fa-solid fa-palette"></i> Appearance</button>
+          <button class="settings-tab" data-tab="about"><i class="fa-solid fa-circle-info"></i> About</button>
+        </div>
+
+        <div class="settings-panel active" id="settings-profile">
+          <div class="settings-section">
+            <h3>Profile</h3>
+            <div class="form-group">
+              <label>Display Name</label>
+              <div class="settings-input-row">
+                <input type="text" id="settingsDisplayName" placeholder="Enter your name" maxlength="50">
+                <button class="btn-save" id="saveDisplayName">Save</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Profile Picture</label>
+              <div class="profile-pic-row">
+                <div class="profile-pic-preview" id="profilePicPreview">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <button class="btn-library-action" id="changePicBtn"><i class="fa-solid fa-camera"></i> Change Photo</button>
+                <input type="file" id="profilePicInput" accept="image/*" hidden>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-audio">
+          <div class="settings-section">
+            <h3>Playback</h3>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Audio Quality</span>
+                <span class="settings-row-desc">Higher quality uses more data</span>
+              </div>
+              <select id="settingsQuality">
+                <option value="low">Low (96 kbps)</option>
+                <option value="normal" selected>Normal (160 kbps)</option>
+                <option value="high">High (320 kbps)</option>
+                <option value="lossless">Lossless (1411 kbps)</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Crossfade</span>
+                <span class="settings-row-desc">Smooth transitions between songs</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingsCrossfade">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Auto-play similar songs</span>
+                <span class="settings-row-desc">When playlist ends</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingsAutoplay" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-appearance">
+          <div class="settings-section">
+            <h3>Theme</h3>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Accent Color</span>
+                <span class="settings-row-desc">Choose your theme color</span>
+              </div>
+            </div>
+            <div class="color-picker-row" id="colorPickerRow">
+              <button class="color-option active" data-color="#1ed760" style="background:#1ed760" title="Matthosify Green"></button>
+              <button class="color-option" data-color="#ff6b6b" style="background:#ff6b6b" title="Red"></button>
+              <button class="color-option" data-color="#4ecdc4" style="background:#4ecdc4" title="Teal"></button>
+              <button class="color-option" data-color="#45b7d1" style="background:#45b7d1" title="Blue"></button>
+              <button class="color-option" data-color="#f9ca24" style="background:#f9ca24" title="Yellow"></button>
+              <button class="color-option" data-color="#a29bfe" style="background:#a29bfe" title="Purple"></button>
+              <button class="color-option" data-color="#fd79a8" style="background:#fd79a8" title="Pink"></button>
+              <button class="color-option" data-color="#e17055" style="background:#e17055" title="Orange"></button>
+            </div>
+            <div class="settings-row" style="margin-top:16px;">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Custom Color</span>
+                <span class="settings-row-desc">Pick any color</span>
+              </div>
+              <input type="color" id="customColorPicker" value="#1ed760" style="width:40px;height:40px;border:none;cursor:pointer;background:none;">
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-about">
+          <div class="settings-section">
+            <h3>About Matthosify</h3>
+            <div class="about-card">
+              <div class="about-logo">
+                <img src="M.jpeg" alt="Matthosify" width="60" height="60" style="border-radius:12px;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+                <svg viewBox="0 0 40 40" width="60" height="60" fill="none" style="display:none;">
+                  <rect width="40" height="40" rx="10" fill="var(--accent-color)"/>
+                  <path d="M8 9V32L20 17L32 32V9" stroke="black" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="36" cy="30" r="3.5" fill="black"/>
+                </svg>
+              </div>
+              <h4>Matthosify</h4>
+              <p class="about-version">Version 1.0.0</p>
+              <p class="about-desc">Your personal music player. Add your own songs, create playlists, and enjoy music your way.</p>
+              <div class="about-stats">
+                <div class="about-stat">
+                  <span class="about-stat-value" id="aboutSongCount">0</span>
+                  <span class="about-stat-label">Songs</span>
+                </div>
+                <div class="about-stat">
+                  <span class="about-stat-value" id="aboutDuration">0 min</span>
+                  <span class="about-stat-label">Total Duration</span>
+                </div>
+                <div class="about-stat">
+                  <span class="about-stat-value" id="aboutLikedCount">0</span>
+                  <span class="about-stat-label">Liked</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="settings-section" style="margin-top:24px;">
+            <h3>Data Management</h3>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Export Library</span>
+                <span class="settings-row-desc">Save your songs as a backup file</span>
+              </div>
+              <button class="btn-library-action" id="settingsExportBtn"><i class="fa-solid fa-download"></i> Export</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Import Library</span>
+                <span class="settings-row-desc">Restore songs from a backup file</span>
+              </div>
+              <button class="btn-library-action" id="settingsImportBtn"><i class="fa-solid fa-upload"></i> Import</button>
+              <input type="file" id="settingsImportInput" accept=".json" hidden>
+            </div>
+            <div class="settings-row danger-zone">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Clear All Data</span>
+                <span class="settings-row-desc">Permanently delete all songs and settings</span>
+              </div>
+              <button class="btn-danger" id="settingsClearBtn"><i class="fa-solid fa-trash-can"></i> Clear All</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Player Bar -->
+  <footer class="player-bar">
+    <div class="player-left">
+      <div class="now-playing" id="nowPlaying">
+        <div class="now-playing-img">
+          <img id="currentSongImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'%3E%3Crect width='56' height='56' fill='%23282828'/%3E%3Ctext x='28' y='32' font-size='24' text-anchor='middle' fill='%23b3b3b3'%3E♫%3C/text%3E%3C/svg%3E" alt="Now Playing">
+        </div>
+        <div class="now-playing-info">
+          <p class="song-title" id="currentSongTitle">No song playing</p>
+          <p class="song-artist" id="currentSongArtist">Add a song to get started</p>
+        </div>
+        <button class="btn-like"><i class="fa-regular fa-heart"></i></button>
+        <div class="sleep-timer" id="sleepTimerBtn" title="Sleep Timer">
+          <i class="fa-solid fa-moon"></i>
+          <span class="sleep-timer-badge" id="sleepTimerBadge" style="display:none;"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="player-center">
+      <div class="player-controls">
+        <button class="control-btn" id="shuffleBtn"><i class="fa-solid fa-shuffle"></i></button>
+        <button class="control-btn" id="prevBtn"><i class="fa-solid fa-backward-step"></i></button>
+        <button class="control-btn play-btn" id="playBtn">
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <button class="control-btn" id="nextBtn"><i class="fa-solid fa-forward-step"></i></button>
+        <button class="control-btn" id="repeatBtn"><i class="fa-solid fa-repeat"></i></button>
+      </div>
+      <div class="progress-bar-container">
+        <span class="current-time" id="currentTime">0:00</span>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-bar-filled" id="progressBarFilled"></div>
+          <div class="progress-thumb" id="progressThumb"></div>
+        </div>
+        <span class="total-time" id="totalTime">0:00</span>
+      </div>
+    </div>
+
+    <div class="player-right">
+      <button class="control-btn-sm" id="queueBtn"><i class="fa-solid fa-list"></i></button>          <button class="control-btn-sm" id="connectBtn"><i class="fa-solid fa-display"></i></button>
+      <div class="volume-control">
+        <button class="control-btn-sm" id="muteBtn"><i class="fa-solid fa-volume-high"></i></button>
+        <div class="volume-bar" id="volumeBar">
+          <div class="volume-bar-filled" id="volumeBarFilled"></div>
+          <div class="volume-thumb" id="volumeThumb"></div>
+        </div>
+      </div>
+      <button class="control-btn-sm" id="fullscreenBtn"><i class="fa-solid fa-expand"></i></button>
+    </div>
+  </footer>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" data-action="play"><i class="fa-solid fa-play"></i> Play</div>
+    <div class="context-menu-item" data-action="play-next"><i class="fa-solid fa-forward-step"></i> Play Next</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="like"><i class="fa-regular fa-heart"></i> Like</div>
+    <div class="context-menu-item" data-action="add-to-playlist"><i class="fa-solid fa-list"></i> Add to Playlist</div>
+    <div class="context-menu-item" data-action="remove"><i class="fa-solid fa-trash-can"></i> Remove</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="share"><i class="fa-solid fa-share-nodes"></i> Share</div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div class="modal-overlay" id="confirmDialog">
+    <div class="modal confirm-modal">
+      <div class="modal-body" style="text-align:center;">
+        <div class="confirm-icon" id="confirmIcon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3 id="confirmTitle" style="font-size:20px;margin-bottom:8px;">Are you sure?</h3>
+        <p id="confirmMessage" style="color:var(--text-secondary);font-size:14px;">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer" style="justify-content:center;">
+        <button class="btn-cancel" id="confirmCancelBtn">Cancel</button>
+        <button class="btn-danger" id="confirmOkBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upgrade Premium Modal -->
+  <div class="modal-overlay" id="upgradeModal">
+    <div class="modal premium-modal">
+      <div class="modal-header" style="border-bottom:1px solid var(--border-color);padding-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <img src="M.jpeg" alt="Matthosify" width="32" height="32" style="border-radius:8px;object-fit:cover;">
+          <h2 style="font-size:22px;font-weight:700;">Matthosify <span style="color:var(--accent-color);">Premium</span></h2>
+        </div>
+        <button class="modal-close" id="closeUpgradeBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="gap:0;">
+        <div class="premium-hero" style="text-align:center;padding:24px 0;">
+          <i class="fa-solid fa-crown" style="font-size:48px;color:var(--accent-color);margin-bottom:12px;"></i>
+          <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">Go Premium</h3>
+          <p style="color:var(--text-secondary);font-size:14px;">Unlock the full Matthosify experience</p>
+        </div>
+        <div class="premium-features">
+          <div class="premium-feature">
+            <div class="premium-feature-icon"><i class="fa-solid fa-wifi"></i></div>
+            <div class="premium-feature-info">
+              <span class="premium-feature-title">Offline Mode</span>
+              <span class="premium-feature-desc">Listen without internet</span>
+            </div>
+            <i class="fa-solid fa-check premium-check"></i>
+          </div>
+          <div class="premium-feature">
+            <div class="premium-feature-icon"><i class="fa-solid fa-volume-high"></i></div>
+            <div class="premium-feature-info">
+              <span class="premium-feature-title">High Quality Audio</span>
+              <span class="premium-feature-desc">Lossless 1411 kbps streaming</span>
+            </div>
+            <i class="fa-solid fa-check premium-check"></i>
+          </div>
+          <div class="premium-feature">
+            <div class="premium-feature-icon"><i class="fa-solid fa-ban"></i></div>
+            <div class="premium-feature-info">
+              <span class="premium-feature-title">No Ads</span>
+              <span class="premium-feature-desc">Uninterrupted music</span>
+            </div>
+            <i class="fa-solid fa-check premium-check"></i>
+          </div>
+          <div class="premium-feature">
+            <div class="premium-feature-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+            <div class="premium-feature-info">
+              <span class="premium-feature-title">Unlimited Skips</span>
+              <span class="premium-feature-desc">Skip as much as you want</span>
+            </div>
+            <i class="fa-solid fa-check premium-check"></i>
+          </div>
+          <div class="premium-feature">
+            <div class="premium-feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div class="premium-feature-info">
+              <span class="premium-feature-title">Custom Themes</span>
+              <span class="premium-feature-desc">Exclusive color schemes</span>
+            </div>
+            <i class="fa-solid fa-check premium-check"></i>
+          </div>
+        </div>
+        <div style="text-align:center;padding:24px 0 8px;">
+          <button class="btn-premium-cta" id="premiumCtaBtn">
+            <i class="fa-solid fa-crown"></i> Get Premium — Free Forever
+          </button>
+          <p style="color:var(--text-subdued);font-size:11px;margin-top:12px;">No payment required. Matthosify is always free.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sleep Timer Popup -->
+  <div class="sleep-timer-popup" id="sleepTimerPopup">
+    <div class="sleep-timer-header">
+      <h4>Sleep Timer</h4>
+      <button class="sleep-timer-close" id="sleepTimerClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="sleep-timer-options">
+      <button class="sleep-option" data-minutes="5">5 minutes</button>
+      <button class="sleep-option" data-minutes="10">10 minutes</button>
+      <button class="sleep-option" data-minutes="15">15 minutes</button>
+      <button class="sleep-option" data-minutes="30">30 minutes</button>
+      <button class="sleep-option" data-minutes="60">1 hour</button>
+      <button class="sleep-option" data-minutes="0" id="sleepTimerOff">Turn Off</button>
+    </div>
+  </div>
+
+  <!-- Add Song Modal -->
+  <div class="modal-overlay" id="addSongModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add a Song</h2>
+        <button class="modal-close" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="songTitle">Song Title</label>
+          <input type="text" id="songTitle" placeholder="Enter song title" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="songArtist">Artist</label>
+          <input type="text" id="songArtist" placeholder="Enter artist name" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="songDuration">Duration (seconds)</label>
+          <input type="number" id="songDuration" placeholder="e.g. 240" min="1" max="3600">
+        </div>
+        <div class="form-group">
+          <label for="songFile">Audio File (MP3, WAV, etc.)</label>
+          <div class="file-upload" id="fileUploadArea">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p>Click to browse or drag audio file here</p>
+            <input type="file" id="songFile" accept="audio/*" hidden>
+          </div>
+          <span class="file-name" id="fileName"></span>
+        </div>
+        <div class="form-group">
+          <label for="songCover">Cover Art (optional)</label>
+          <div class="file-upload small" id="coverUploadArea">
+            <i class="fa-solid fa-image"></i>
+            <p>Upload cover image</p>
+            <input type="file" id="songCover" accept="image/*" hidden>
+          </div>
+          <span class="file-name" id="coverName"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelModalBtn">Cancel</button>
+        <button class="btn-add-song" id="confirmAddSongBtn">Add to Library</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Queue Panel -->
+  <div class="queue-panel" id="queuePanel">
+    <div class="queue-header">
+      <h3>Queue</h3>
+      <button class="queue-close" id="closeQueueBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="queue-body" id="queueBody">
+      <p class="queue-empty">No songs in queue</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <div class="toast-icon"><i class="fa-solid fa-check-circle"></i></div>
+    <span class="toast-message" id="toastMessage">Song added successfully!</span>
+  </div>
+
+  <!-- Playlist Detail Page -->
+  <section class="page" id="page-playlist">
+    <div class="playlist-detail-header">
+      <div class="playlist-detail-art" id="playlistDetailArt">
+        <i class="fa-solid fa-music"></i>
+      </div>
+      <div class="playlist-detail-info">
+        <p class="playlist-detail-type">PLAYLIST</p>
+        <h2 id="playlistDetailTitle">My Playlist</h2>
+        <p class="playlist-detail-desc" id="playlistDetailDesc">Custom playlist</p>
+        <div class="playlist-detail-meta">
+          <span class="owner" id="playlistDetailOwner">Matthosify User</span>
+          <span>·</span>
+          <span id="playlistDetailCount">0 songs</span>
+        </div>
+      </div>
+    </div>
+    <div class="playlist-detail-actions">
+      <button class="btn-playlist-play" id="playlistPlayBtn"><i class="fa-solid fa-play"></i></button>
+      <button class="btn-playlist-action" id="playlistShuffleBtn"><i class="fa-solid fa-shuffle"></i></button>
+      <button class="btn-playlist-action" id="playlistLikeBtn"><i class="fa-regular fa-heart"></i></button>
+      <button class="btn-playlist-action" id="playlistDownloadBtn"><i class="fa-solid fa-download"></i></button>
+      <button class="btn-playlist-action danger" id="playlistDeleteBtn"><i class="fa-solid fa-trash-can"></i></button>
+    </div>
+    <div class="library-songs">
+      <table class="song-table" id="playlistTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Duration</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="playlistBody">
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Artist Page -->
+  <section class="page" id="page-artist">
+    <div class="artist-header">
+      <div class="artist-image-large" id="artistImageLarge">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="artist-info">
+        <p class="playlist-detail-type">ARTIST</p>
+        <h2 id="artistNameLarge">Artist</h2>
+        <p class="listener-count" id="artistSongCount">0 songs</p>
+      </div>
+    </div>
+    <div class="playlist-detail-actions">
+      <button class="btn-playlist-play" id="artistPlayBtn"><i class="fa-solid fa-play"></i></button>
+      <button class="btn-playlist-action" id="artistShuffleBtn"><i class="fa-solid fa-shuffle"></i></button>
+    </div>
+    <div class="library-songs">
+      <table class="song-table" id="artistTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Duration</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="artistBody">
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Create Playlist Modal -->
+  <div class="modal-overlay" id="createPlaylistModal">
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <h2>Create Playlist</h2>
+        <button class="modal-close" id="closeCreatePlaylistBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="create-playlist-input-wrapper">
+          <input type="text" id="createPlaylistInput" placeholder="My Playlist #1" maxlength="100" autofocus>
+          <div style="display:flex;gap:12px;justify-content:flex-end;">
+            <button class="btn-cancel" id="cancelCreatePlaylistBtn">Cancel</button>
+            <button class="btn-add-song" id="confirmCreatePlaylistBtn">Create</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add to Playlist Menu -->
+  <div class="context-menu" id="addToPlaylistMenu" style="min-width:200px;">
+    <div class="context-menu-item" style="font-weight:600;cursor:default;color:var(--text-secondary);font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Add to Playlist</div>
+    <div class="context-menu-divider"></div>
+    <div id="addToPlaylistList"></div>
+  </div>
+
+  <!-- Now Playing Full-Screen View -->
+  <div class="now-playing-fullscreen" id="nowPlayingFullscreen">
+    <div class="np-backdrop" id="npBackdrop"></div>
+    <div class="np-content">
+      <div class="np-top">
+        <button class="np-close" id="npCloseBtn"><i class="fa-solid fa-chevron-down"></i></button>
+        <div class="np-top-info">
+          <span id="npSourceText">Playing from Your Library</span>
+        </div>
+        <button class="np-more" id="npMoreBtn"><i class="fa-solid fa-ellipsis-horizontal"></i></button>
+      </div>
+      <div class="np-main">
+        <div class="np-art-container">
+          <div class="np-art" id="npArt">
+            <img id="npArtImg" src="" alt="Album Art">
+          </div>
+        </div>
+        <div class="np-song-info">
+          <div class="np-song-text">
+            <h2 id="npSongTitle">No song playing</h2>
+            <p id="npSongArtist">Add a song to get started</p>
+          </div>
+          <div class="np-actions">
+            <button class="np-action-btn" id="npLikeBtn"><i class="fa-regular fa-heart"></i></button>
+          </div>
+        </div>
+        <div class="np-progress-section">
+          <div class="np-progress-bar" id="npProgressBar">
+            <div class="np-progress-filled" id="npProgressFilled"></div>
+            <div class="np-progress-thumb" id="npProgressThumb"></div>
+          </div>
+          <div class="np-time">
+            <span id="npCurrentTime">0:00</span>
+            <span id="npTotalTime">0:00</span>
+          </div>
+        </div>
+        <div class="np-controls">
+          <button class="np-ctrl" id="npShuffleBtn"><i class="fa-solid fa-shuffle"></i></button>
+          <button class="np-ctrl" id="npPrevBtn"><i class="fa-solid fa-backward-step"></i></button>
+          <button class="np-ctrl np-play-btn" id="npPlayBtn">
+            <i class="fa-solid fa-play"></i>
+          </button>
+          <button class="np-ctrl" id="npNextBtn"><i class="fa-solid fa-forward-step"></i></button>
+          <button class="np-ctrl" id="npRepeatBtn"><i class="fa-solid fa-repeat"></i></button>
+        </div>
+        <div class="np-volume-row">
+          <button class="np-ctrl-sm" id="npMuteBtn"><i class="fa-solid fa-volume-high"></i></button>
+          <div class="np-volume-bar" id="npVolumeBar">
+            <div class="np-volume-filled" id="npVolumeFilled"></div>
+            <div class="np-volume-thumb" id="npVolumeThumb"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden Audio Element -->
+  <audio id="audioPlayer"></audio>
+
+  <script src="script.js"></script>
+</body>
+</html>
