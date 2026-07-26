@@ -22,25 +22,8 @@ const FL = {
   // Custom samples storage: trackId -> { name: 'filename.wav', data: base64ArrayBuffer, decoded: AudioBuffer|null }
   customSamples: {},
 
-  tracks: [
-    { id: 'kick',      label: 'Kick',      short: 'Kk', color: '#FF6B6B', steps: [], vol: 85, pan: 0, mute: false, solo: false },
-    { id: 'snare',     label: 'Snare',     short: 'Sn', color: '#FECA57', steps: [], vol: 75, pan: 0, mute: false, solo: false },
-    { id: 'hihat_c',   label: 'Hi-Hat C',  short: 'HC', color: '#48DBFB', steps: [], vol: 65, pan: 0, mute: false, solo: false },
-    { id: 'hihat_o',   label: 'Hi-Hat O',  short: 'HO', color: '#0ABDE3', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'clap',      label: 'Clap',      short: 'Cp', color: '#FF9FF3', steps: [], vol: 70, pan: 0, mute: false, solo: false },
-    { id: 'snare2',    label: 'Snare 2',   short: 'S2', color: '#F368E0', steps: [], vol: 65, pan: 0, mute: false, solo: false },
-    { id: 'tom_h',     label: 'Tom Hi',    short: 'TH', color: '#54A0FF', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'tom_m',     label: 'Tom Mid',   short: 'TM', color: '#2E86DE', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'tom_l',     label: 'Tom Lo',    short: 'TL', color: '#1B4F72', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'crash',     label: 'Crash',     short: 'Cr', color: '#F368E0', steps: [], vol: 50, pan: 0, mute: false, solo: false },
-    { id: 'ride',      label: 'Ride',      short: 'Rd', color: '#C44569', steps: [], vol: 45, pan: 0, mute: false, solo: false },
-    { id: 'shaker',    label: 'Shaker',    short: 'Sh', color: '#00D2D3', steps: [], vol: 50, pan: 0, mute: false, solo: false },
-    { id: 'tamb',      label: 'Tambourine',short: 'Ta', color: '#FDCB6E', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'cowbell',   label: 'Cowbell',   short: 'Cb', color: '#E17055', steps: [], vol: 55, pan: 0, mute: false, solo: false },
-    { id: 'conga',     label: 'Conga',     short: 'Co', color: '#D63031', steps: [], vol: 50, pan: 0, mute: false, solo: false },
-    { id: 'bongo',     label: 'Bongo',     short: 'Bg', color: '#E84393', steps: [], vol: 50, pan: 0, mute: false, solo: false },
-    { id: 'maracas',   label: 'Maracas',   short: 'Ma', color: '#00B894', steps: [], vol: 45, pan: 0, mute: false, solo: false },
-  ],
+  // tracks is dynamically set based on currentKit (see updateFLKitTracks)
+  tracks: [],
 
   // ---- Piano Roll / Melody State ----
   viewMode: 'drums', // 'drums' | 'piano-roll'
@@ -72,14 +55,16 @@ function flMidiToFreq(pitch) {
 
 // ---- Initialize ----
 function initFLPatterns() {
+  // Update tracks from current kit first
+  updateFLKitTracks(FL.currentKit);
   // Initialize pattern 1 with empty steps
   FL.patterns[1] = FL.tracks.map(t => ({
     ...t,
     steps: new Array(FL.stepLen).fill(0),
     vol: t.vol,
-    pan: t.pan,
-    mute: t.mute,
-    solo: t.solo
+    pan: t.pan || 0,
+    mute: false,
+    solo: false
   }));
   FL.currPattern = 1;
   // Initialize melody notes for pattern 1
@@ -361,6 +346,88 @@ const FL_KITS = {
   }
 };
 
+// ---- Per-Kit Track Definitions ----
+// Each kit shows only the instruments that match its genre
+const FL_KIT_TRACKS = {
+  'hiphop': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
+    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
+    { id: 'bass808', label: '808 Bass',  short: 'B8', color: '#C44569', vol: 80, pan: 0, synth: true },
+  ],
+  'rock': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 50, pan: 0 },
+    { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 45, pan: 0 },
+    { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 55, pan: 0 },
+    { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 55, pan: 0 },
+    { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 55, pan: 0 },
+  ],
+  'phonk': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'cowbell', label: 'Cowbell',   short: 'Cb', color: '#E17055', vol: 60, pan: 0 },
+    { id: 'bass808', label: '808 Bass',  short: 'B8', color: '#C44569', vol: 80, pan: 0, synth: true },
+  ],
+  'electronic': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
+    { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 50, pan: 0 },
+    { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 45, pan: 0 },
+  ],
+  'lofi': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 75, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 65, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 55, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 45, pan: 0 },
+    { id: 'rimshot', label: 'Rimshot',   short: 'Rm', color: '#E17055', vol: 50, pan: 0, synth: true },
+    { id: 'crash',   label: 'Cymbal',    short: 'Cy', color: '#F368E0', vol: 40, pan: 0 },
+  ],
+  'trap': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
+    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
+    { id: 'bass808', label: '808 Bass',  short: 'B8', color: '#C44569', vol: 80, pan: 0, synth: true },
+  ],
+  'jazz': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 65, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 55, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 45, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 35, pan: 0 },
+    { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 40, pan: 0 },
+    { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 35, pan: 0 },
+    { id: 'tamb',    label: 'Saxophone', short: 'Sx', color: '#FDCB6E', vol: 60, pan: 0, synth: true },
+  ],
+};
+
+// ---- Helper: Update FL.tracks for current kit ----
+function updateFLKitTracks(kitName) {
+  const kit = FL_KITS[kitName];
+  if (!kit) return;
+  const trackDefs = FL_KIT_TRACKS[kitName];
+  if (!trackDefs) return;
+  FL.tracks = trackDefs.map(t => ({
+    ...t,
+    steps: [],
+    mute: false,
+    solo: false
+  }));
+}
+
 // Build the full FL_SAMPLE_MAP from current kit + fills
 // Returns map of trackId -> full URL
 function buildFLSampleMap(kitName) {
@@ -393,6 +460,11 @@ async function switchFLKit(kitName) {
   
   // Rebuild the sample map
   FL_SAMPLE_MAP = buildFLSampleMap(kitName);
+  
+  // Update tracks for this kit's genre-specific instruments
+  updateFLKitTracks(kitName);
+  // Reinitialize patterns with new tracks
+  initFLPatterns();
   
   updateFLStatusBar(`⏳ Switching to ${FL_KITS[kitName].label}...`);
   
@@ -688,6 +760,61 @@ function playSynthFallback(trackId, ctx, time, vol) {
       osc.connect(g);
       g.connect(dest);
       osc.start(time); osc.stop(time + 0.1);
+      break;
+    }
+    case 'bass808': {
+      // Deep sub-bass 808 kick
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(55, time);
+      osc.frequency.exponentialRampToValueAtTime(28, time + 0.35);
+      gain.gain.setValueAtTime(vol * 0.9, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(time); osc.stop(time + 0.45);
+      break;
+    }
+    case 'saxophone': case 'tamb': {
+      // Warm sax-like synth (sawtooth + lowpass filter)
+      const saxOsc = ctx.createOscillator();
+      const saxGain = ctx.createGain();
+      const saxFilter = ctx.createBiquadFilter();
+      saxOsc.type = 'sawtooth';
+      saxOsc.frequency.setValueAtTime(220, time);
+      saxOsc.frequency.linearRampToValueAtTime(180, time + 0.25);
+      saxFilter.type = 'lowpass';
+      saxFilter.frequency.setValueAtTime(600, time);
+      saxFilter.frequency.exponentialRampToValueAtTime(200, time + 0.3);
+      saxFilter.Q.value = 3;
+      saxGain.gain.setValueAtTime(vol * 0.6, time);
+      saxGain.gain.linearRampToValueAtTime(vol * 0.3, time + 0.08);
+      saxGain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+      saxOsc.connect(saxFilter);
+      saxFilter.connect(saxGain);
+      saxGain.connect(dest);
+      saxOsc.start(time); saxOsc.stop(time + 0.5);
+      break;
+    }
+    case 'rimshot': {
+      // Sharp rimshot click
+      const rBuf = ctx.createBuffer(1, ctx.sampleRate * 0.03, ctx.sampleRate);
+      const rD = rBuf.getChannelData(0);
+      for (let i = 0; i < rD.length; i++) {
+        rD[i] = (Math.random() * 2 - 1) * Math.max(0, 1 - i / rD.length) * 0.7;
+      }
+      const rSrc = ctx.createBufferSource();
+      rSrc.buffer = rBuf;
+      const rF = ctx.createBiquadFilter();
+      rF.type = 'highpass';
+      rF.frequency.value = 5000;
+      const rG = ctx.createGain();
+      rG.gain.value = vol * 0.6;
+      rSrc.connect(rF);
+      rF.connect(rG);
+      rG.connect(dest);
+      rSrc.start(time);
       break;
     }
     default: {
