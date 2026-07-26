@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matthosify - Music for Everyone</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -38,6 +38,22 @@
         <a href="#" class="nav-link" data-page="library">
           <i class="fa-solid fa-book"></i>
           <span>Your Library</span>
+        </a>
+        <a href="#" class="nav-link" data-page="genre">
+          <i class="fa-solid fa-compass"></i>
+          <span>Discover</span>
+        </a>
+        <a href="#" class="nav-link" data-page="wrapped">
+          <i class="fa-solid fa-chart-simple"></i>
+          <span>Stats</span>
+        </a>
+        <a href="#" class="nav-link" data-page="podcasts">
+          <i class="fa-solid fa-podcast"></i>
+          <span>Podcasts</span>
+        </a>
+        <a href="#" class="nav-link" data-page="ai-music">
+          <i class="fa-solid fa-drum"></i>
+          <span>Beat Studio</span>
         </a>
       </nav>
 
@@ -77,6 +93,7 @@
           <button class="nav-btn" id="forwardBtn"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
         <div class="top-bar-right">
+          <div class="shortcuts-hint" title="Keyboard Shortcuts">⌨️</div>
           <button class="btn-upgrade">Upgrade</button>
           <div class="profile-dropdown">
             <button class="btn-profile" id="profileBtn">
@@ -84,6 +101,10 @@
               <span id="profileName">Matthosify User</span>
               <i class="fa-solid fa-chevron-down"></i>
             </button>
+            <div class="stream-indicator" id="streamIndicator" style="display:none;">
+              <span class="quality-badge" id="qualityBadge">Local</span>
+              <span class="offline-badge-sm" id="offlineBadge" style="display:none;">📥</span>
+            </div>
             <div class="profile-menu" id="profileMenu">
               <a href="#" data-page="settings" onclick="navigateTo('settings');closeProfileMenu();"><i class="fa-solid fa-user-pen"></i> Profile</a>
               <a href="#" data-page="settings" onclick="navigateTo('settings');closeProfileMenu();"><i class="fa-solid fa-gear"></i> Settings</a>
@@ -139,58 +160,44 @@
           <div class="recently-played-grid"></div>
         </section>
 
+        <!-- Smart Playlists -->
+        <section class="content-section" id="smartPlaylistsSection">
+          <div class="section-header">
+            <h3>Made for You</h3>
+            <a href="#" class="show-all" onclick="generateSmartPlaylists();return false;">Refresh</a>
+          </div>
+          <div id="smartPlaylistsContainer"></div>
+        </section>
+
+        <!-- Friend Activity -->
+        <section class="content-section">
+          <div class="section-header">
+            <h3><i class="fa-solid fa-user-group"></i> Friend Activity</h3>
+          </div>
+          <div id="friendActivityContainer"></div>
+        </section>
+
+        <!-- Recommended For You -->
+        <section class="content-section">
+          <div class="section-header">
+            <h3>Recommended For You</h3>
+            <a href="#" class="show-all" onclick="navigateTo('home');return false;">Refresh</a>
+          </div>
+          <div class="song-grid" id="recommendedGrid"></div>
+        </section>
+
         <!-- Your Songs Section -->
         <section class="content-section">
           <div class="section-header">
             <h3>Your Songs</h3>
-            <a href="#" class="show-all">Show all</a>
+            <a href="#" class="show-all" onclick="navigateTo('library');return false;">Show all</a>
           </div>
           <div class="song-grid" id="songGrid-home">
             <!-- Songs will be rendered here -->
           </div>
         </section>
 
-        <!-- Made for You -->
-        <section class="content-section">
-          <div class="section-header">
-            <h3>Made for You</h3>
-            <a href="#" class="show-all">Show all</a>
-          </div>
-          <div class="album-grid">
-            <div class="album-card">
-              <div class="album-image">
-                <i class="fa-solid fa-headphones"></i>
-                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
-              </div>
-              <p class="album-title">Your Daily Mix</p>
-              <p class="album-desc">Songs you added recently</p>
-            </div>
-            <div class="album-card">
-              <div class="album-image">
-                <i class="fa-solid fa-star"></i>
-                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
-              </div>
-              <p class="album-title">Favorites Mix</p>
-              <p class="album-desc">Your most played songs</p>
-            </div>
-            <div class="album-card">
-              <div class="album-image">
-                <i class="fa-solid fa-clock"></i>
-                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
-              </div>
-              <p class="album-title">Recently Added</p>
-              <p class="album-desc">Latest additions to library</p>
-            </div>
-            <div class="album-card">
-              <div class="album-image">
-                <i class="fa-solid fa-record-vinyl"></i>
-                <button class="play-album-btn"><i class="fa-solid fa-play"></i></button>
-              </div>
-              <p class="album-title">Matthosify Weekly</p>
-              <p class="album-desc">Your weekly recommendation</p>
-            </div>
-          </div>
-        </section>
+
       </section>
 
       <!-- Search Page -->
@@ -204,23 +211,23 @@
         <div class="browse-section">
           <h3>Browse All</h3>
           <div class="browse-grid">
-            <div class="browse-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="browse-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);" onclick="navigateTo('genre')">
+              <span>Genres & Moods</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="navigateTo('podcasts')">
               <span>Podcasts</span>
             </div>
-            <div class="browse-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-              <span>Made For You</span>
+            <div class="browse-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" onclick="navigateTo('wrapped')">
+              <span>Your Stats</span>
             </div>
-            <div class="browse-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-              <span>Charts</span>
-            </div>
-            <div class="browse-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
-              <span>New Releases</span>
-            </div>
-            <div class="browse-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+            <div class="browse-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);" onclick="playRadio('discover')">
               <span>Discover</span>
             </div>
-            <div class="browse-card" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);">
-              <span>Live Events</span>
+            <div class="browse-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);" onclick="playRadio('daily-mix')">
+              <span>Daily Mix</span>
+            </div>
+            <div class="browse-card" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);" onclick="document.getElementById('ytSearchInput').focus()">
+              <span>YouTube Search</span>
             </div>
           </div>
         </div>
@@ -239,14 +246,15 @@
           </div>
           <div class="library-actions">
             <button class="btn-library-action" id="addSongBtn"><i class="fa-solid fa-plus"></i> Add Song</button>
+            <button class="btn-library-action" id="searchYTBtn"><i class="fa-brands fa-youtube"></i> YouTube</button>
             <button class="btn-library-action" id="importBtn"><i class="fa-solid fa-file-import"></i> Import</button>
           </div>
         </div>
         <div class="library-filters">
-          <button class="filter-btn active">Songs</button>
-          <button class="filter-btn">Playlists</button>
-          <button class="filter-btn">Albums</button>
-          <button class="filter-btn">Artists</button>
+          <button class="filter-btn active" data-filter="songs">Songs</button>
+          <button class="filter-btn" data-filter="playlists">Playlists</button>
+          <button class="filter-btn" data-filter="albums">Albums</button>
+          <button class="filter-btn" data-filter="artists">Artists</button>
         </div>
         <div class="library-songs">
           <table class="song-table" id="libraryTable">
@@ -265,6 +273,8 @@
             </tbody>
           </table>
         </div>
+      </section>
+
       <!-- Settings Page -->
       <section class="page" id="page-settings">
         <div class="settings-header">
@@ -273,6 +283,10 @@
         <div class="settings-tabs">
           <button class="settings-tab active" data-tab="profile"><i class="fa-solid fa-user"></i> Profile</button>
           <button class="settings-tab" data-tab="audio"><i class="fa-solid fa-sliders"></i> Audio</button>
+          <button class="settings-tab" data-tab="youtube"><i class="fa-brands fa-youtube"></i> YouTube</button>
+          <button class="settings-tab" data-tab="spotify"><i class="fa-brands fa-spotify"></i> Spotify</button>
+          <button class="settings-tab" data-tab="huggingface"><i class="fa-solid fa-face-smile"></i> Hugging Face</button>
+          <button class="settings-tab" data-tab="eq"><i class="fa-solid fa-chart-bar"></i> Equalizer</button>
           <button class="settings-tab" data-tab="appearance"><i class="fa-solid fa-palette"></i> Appearance</button>
           <button class="settings-tab" data-tab="about"><i class="fa-solid fa-circle-info"></i> About</button>
         </div>
@@ -318,12 +332,12 @@
             <div class="settings-row">
               <div class="settings-row-info">
                 <span class="settings-row-label">Crossfade</span>
-                <span class="settings-row-desc">Smooth transitions between songs</span>
+                <span class="settings-row-desc">Smooth transitions between songs (seconds)</span>
               </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="settingsCrossfade">
-                <span class="toggle-slider"></span>
-              </label>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="range" id="settingsCrossfadeDuration" min="0" max="12" value="3" step="1" style="width:100px;">
+                <span id="crossfadeDurationLabel" style="font-size:13px;color:var(--text-secondary);min-width:24px;">3s</span>
+              </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-info">
@@ -334,6 +348,135 @@
                 <input type="checkbox" id="settingsAutoplay" checked>
                 <span class="toggle-slider"></span>
               </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-info">
+                <span class="settings-row-label">Gapless Playback</span>
+                <span class="settings-row-desc">Remove silence between tracks</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingsGapless">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-youtube">
+          <div class="settings-section">
+            <h3><i class="fa-brands fa-youtube" style="color:#ff0000;"></i> YouTube Integration</h3>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+              Search and play any song from YouTube. Get a free API key from 
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:var(--accent-color);text-decoration:underline;">Google Cloud Console</a> 
+              (YouTube Data API v3, free quota: 10,000 requests/day).
+            </p>
+            <div class="form-group">
+              <label>YouTube Data API Key</label>
+              <div class="settings-input-row">
+                <input type="password" id="settingsYTKey" placeholder="Enter your API key" style="flex:1;">
+                <button class="btn-save" id="saveYTKey">Save</button>
+              </div>
+              <span class="file-name" id="ytKeyStatus"></span>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <button class="btn-library-action" id="testYTKey"><i class="fa-solid fa-vial"></i> Test API Key</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-spotify">
+          <div class="settings-section">
+            <h3><i class="fa-brands fa-spotify" style="color:#1DB954;"></i> Spotify Integration</h3>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+              Connect your Spotify account to search their catalog and get recommendations.
+              Create an app at 
+              <a href="https://developer.spotify.com/dashboard" target="_blank" style="color:var(--accent-color);text-decoration:underline;">Spotify Developer Dashboard</a>.
+            </p>
+            <div class="form-group">
+              <label>Spotify Client ID</label>
+              <input type="password" id="settingsSpotifyClientId" placeholder="Enter Client ID">
+            </div>
+            <div class="form-group">
+              <label>Spotify Client Secret</label>
+              <input type="password" id="settingsSpotifySecret" placeholder="Enter Client Secret">
+            </div>
+            <div class="form-group" style="flex-direction:row;align-items:center;gap:12px;margin-top:8px;">
+              <button class="btn-add-song" id="connectSpotifyBtn"><i class="fa-solid fa-link"></i> Connect Spotify</button>
+              <span id="spotifyStatus" style="font-size:13px;color:var(--text-secondary);">Not connected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-huggingface">
+          <div class="settings-section">
+            <h3><i class="fa-solid fa-face-smile" style="color:#fbbf24;"></i> Hugging Face AI</h3>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+              Use Hugging Face's hosted AI models to generate high-quality music from text prompts.
+              Get a <strong>free API token</strong> from 
+              <a href="https://huggingface.co/settings/tokens" target="_blank" style="color:var(--accent-color);text-decoration:underline;">huggingface.co/settings/tokens</a>.
+              Your free account includes <strong>$0.10 monthly credits</strong> — enough for several music generations!
+              We use <strong>MusicGen-Small</strong> by Meta.
+            </p>
+            <p style="color:var(--text-secondary);font-size:12px;margin-bottom:16px;padding:10px 14px;background:rgba(251,191,36,0.08);border-radius:8px;border:1px solid rgba(251,191,36,0.2);">
+              <i class="fa-solid fa-lightbulb" style="color:#fbbf24;"></i> 
+              <strong>Browser note:</strong> The Hugging Face API may not work directly from your browser due to CORS restrictions.
+              If generation fails, you'll get a fallback. For best results, use a free CORS proxy like 
+              <a href="https://corsproxy.io/" target="_blank" style="color:var(--accent-color);text-decoration:underline;">corsproxy.io</a> 
+              (paste the API URL there to test). Or just let the app fall back to browser-based generation — it still works!
+            </p>
+            <div class="form-group">
+              <label>Hugging Face Access Token</label>
+              <div class="settings-input-row">
+                <input type="password" id="settingsHfToken" placeholder="hf_..." style="flex:1;">
+                <button class="btn-save" id="saveHfToken">Save</button>
+              </div>
+              <span class="file-name" id="hfTokenStatus"></span>
+            </div>
+            <div class="form-group">
+              <label>CORS Proxy URL (optional — needed for browser use)</label>
+              <div class="settings-input-row">
+                <input type="text" id="settingsHfProxy" placeholder="https://corsproxy.io/?" style="flex:1;font-size:13px;">
+                <button class="btn-save" id="saveHfProxy">Save</button>
+              </div>
+              <span class="file-name" id="hfProxyStatus"></span>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <button class="btn-library-action" id="testHfToken"><i class="fa-solid fa-vial"></i> Test Token</button>
+              <span style="font-size:11px;color:var(--text-subdued);margin-left:8px;">Validates your token, no credits used</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-panel" id="settings-eq">
+          <div class="settings-section">
+            <h3><i class="fa-solid fa-chart-bar"></i> Equalizer</h3>
+            <div class="eq-presets">
+              <button class="filter-btn active" data-eq="flat">Flat</button>
+              <button class="filter-btn" data-eq="rock">Rock</button>
+              <button class="filter-btn" data-eq="pop">Pop</button>
+              <button class="filter-btn" data-eq="jazz">Jazz</button>
+              <button class="filter-btn" data-eq="classical">Classical</button>
+              <button class="filter-btn" data-eq="bass">Bass Boost</button>
+              <button class="filter-btn" data-eq="vocal">Vocal</button>
+              <button class="filter-btn" data-eq="hiphop">Hip Hop</button>
+              <button class="filter-btn" data-eq="electronic">Electronic</button>
+              <button class="filter-btn" data-eq="custom">Custom</button>
+            </div>
+            <div class="eq-bands" id="eqBands">
+              <div class="eq-band"><span>32</span><input type="range" min="-12" max="12" value="0" data-freq="32"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>64</span><input type="range" min="-12" max="12" value="0" data-freq="64"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>125</span><input type="range" min="-12" max="12" value="0" data-freq="125"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>250</span><input type="range" min="-12" max="12" value="0" data-freq="250"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>500</span><input type="range" min="-12" max="12" value="0" data-freq="500"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>1K</span><input type="range" min="-12" max="12" value="0" data-freq="1000"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>2K</span><input type="range" min="-12" max="12" value="0" data-freq="2000"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>4K</span><input type="range" min="-12" max="12" value="0" data-freq="4000"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>8K</span><input type="range" min="-12" max="12" value="0" data-freq="8000"><span class="eq-val">0</span></div>
+              <div class="eq-band"><span>16K</span><input type="range" min="-12" max="12" value="0" data-freq="16000"><span class="eq-val">0</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;">
+              <button class="btn-cancel" id="resetEqBtn">Reset</button>
+              <button class="btn-add-song" id="applyEqBtn">Apply</button>
             </div>
           </div>
         </div>
@@ -380,8 +523,8 @@
                 </svg>
               </div>
               <h4>Matthosify</h4>
-              <p class="about-version">Version 1.0.0</p>
-              <p class="about-desc">Your personal music player. Add your own songs, create playlists, and enjoy music your way.</p>
+              <p class="about-version">Version 2.0.0</p>
+              <p class="about-desc">Your personal music player. Stream from YouTube, discover new music, and enjoy podcasts — all in one place.</p>
               <div class="about-stats">
                 <div class="about-stat">
                   <span class="about-stat-value" id="aboutSongCount">0</span>
@@ -425,6 +568,263 @@
           </div>
         </div>
       </section>
+
+      <!-- Genre / Mood Browsing Page -->
+      <section class="page" id="page-genre">
+        <div class="settings-header">
+          <h2>Discover</h2>
+          <p style="color:var(--text-secondary);">Browse by genre, mood, or try a radio station</p>
+        </div>
+        <div class="genre-grid" id="genreGrid">
+          <div class="genre-card" data-genre="rock" style="background:linear-gradient(135deg,#e74c3c,#c0392b);"><span>Rock</span><i class="fa-solid fa-guitar"></i></div>
+          <div class="genre-card" data-genre="pop" style="background:linear-gradient(135deg,#e84393,#fd79a8);"><span>Pop</span><i class="fa-solid fa-star"></i></div>
+          <div class="genre-card" data-genre="jazz" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);"><span>Jazz</span><i class="fa-solid fa-saxophone"></i></div>
+          <div class="genre-card" data-genre="hip-hop" style="background:linear-gradient(135deg,#f39c12,#e67e22);"><span>Hip Hop</span><i class="fa-solid fa-record-vinyl"></i></div>
+          <div class="genre-card" data-genre="electronic" style="background:linear-gradient(135deg,#00cec9,#55efc4);"><span>Electronic</span><i class="fa-solid fa-bolt"></i></div>
+          <div class="genre-card" data-genre="classical" style="background:linear-gradient(135deg,#0984e3,#74b9ff);"><span>Classical</span><i class="fa-solid fa-violin"></i></div>
+          <div class="genre-card" data-genre="rnb" style="background:linear-gradient(135deg,#d63031,#e17055);"><span>R&B</span><i class="fa-solid fa-microphone"></i></div>
+          <div class="genre-card" data-genre="country" style="background:linear-gradient(135deg,#00b894,#55efc4);"><span>Country</span><i class="fa-solid fa-tree"></i></div>
+          <div class="genre-card" data-genre="metal" style="background:linear-gradient(135deg,#2d3436,#636e72);"><span>Metal</span><i class="fa-solid fa-fire"></i></div>
+          <div class="genre-card" data-genre="lofi" style="background:linear-gradient(135deg,#b2bec3,#dfe6e9);color:#2d3436;"><span>Lo-Fi</span><i class="fa-solid fa-cloud"></i></div>
+          <div class="genre-card" data-genre="chill" style="background:linear-gradient(135deg,#74b9ff,#55efc4);"><span>Chill</span><i class="fa-solid fa-mug-hot"></i></div>
+          <div class="genre-card" data-genre="workout" style="background:linear-gradient(135deg,#e74c3c,#f39c12);"><span>Workout</span><i class="fa-solid fa-dumbbell"></i></div>
+        </div>
+        <div class="genre-songs" id="genreSongs" style="display:none;">
+          <div class="section-header" style="margin-bottom:16px;">
+            <h3 id="genreTitle">Rock Songs</h3>
+            <button class="btn-cancel" id="clearGenreFilter" style="font-size:12px;">Clear filter</button>
+          </div>
+          <table class="song-table">
+            <thead><tr><th>#</th><th>Title</th><th>Artist</th><th>Duration</th></tr></thead>
+            <tbody id="genreSongsBody"></tbody>
+          </table>
+        </div>
+        <div class="genre-radio" id="genreRadio" style="display:none;">
+          <div class="section-header" style="margin-top:24px;margin-bottom:16px;">
+            <h3>Radio Stations</h3>
+          </div>
+          <div class="radio-stations" id="radioStations"></div>
+        </div>
+      </section>
+
+      <!-- Wrapped / Stats Page -->
+      <section class="page" id="page-wrapped">
+        <div class="settings-header">
+          <h2>Your Listening Stats</h2>
+          <p style="color:var(--text-secondary);">See your music journey</p>
+        </div>
+        <div class="stats-overview" id="statsOverview">
+          <div class="stat-card">
+            <i class="fa-solid fa-headphones"></i>
+            <span class="stat-card-value" id="statTotalPlays">0</span>
+            <span class="stat-card-label">Total Plays</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-clock"></i>
+            <span class="stat-card-value" id="statTotalTime">0h</span>
+            <span class="stat-card-label">Listening Time</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-music"></i>
+            <span class="stat-card-value" id="statUniqueSongs">0</span>
+            <span class="stat-card-label">Songs Played</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-heart"></i>
+            <span class="stat-card-value" id="statLikedSongs">0</span>
+            <span class="stat-card-label">Liked Songs</span>
+          </div>
+        </div>
+        <div class="stats-section">
+          <div class="section-header"><h3>Most Played Songs</h3></div>
+          <div class="stats-list" id="topSongsList"><p style="color:var(--text-secondary);">No data yet — start listening!</p></div>
+        </div>
+        <div class="stats-section">
+          <div class="section-header"><h3>Top Artists</h3></div>
+          <div class="stats-list" id="topArtistsList"><p style="color:var(--text-secondary);">No data yet — start listening!</p></div>
+        </div>
+        <div class="stats-section">
+          <div class="section-header"><h3>Listening History</h3></div>
+          <div class="stats-list" id="historyList"><p style="color:var(--text-secondary);">No history yet</p></div>
+        </div>
+      </section>
+
+      <!-- Podcasts Page -->
+      <section class="page" id="page-podcasts">
+        <div class="library-header">
+          <div class="library-header-left">
+            <h2>Podcasts</h2>
+          </div>
+          <div class="library-actions">
+            <button class="btn-library-action" id="addPodcastBtn"><i class="fa-solid fa-plus"></i> Add RSS Feed</button>
+          </div>
+        </div>
+        <div class="podcast-grid" id="podcastGrid">
+          <div class="podcast-empty">
+            <i class="fa-solid fa-podcast"></i>
+            <h3>No podcasts yet</h3>
+            <p>Add an RSS feed URL to get started</p>
+          </div>
+        </div>
+        <!-- Podcast Detail -->
+        <div class="podcast-detail" id="podcastDetail" style="display:none;">
+          <div class="podcast-detail-header">
+            <div class="podcast-art" id="podcastArt"><i class="fa-solid fa-podcast"></i></div>
+            <div class="podcast-detail-info">
+              <p class="playlist-detail-type">PODCAST</p>
+              <h2 id="podcastTitle">Podcast Title</h2>
+              <p id="podcastAuthor" style="color:var(--text-secondary);">Author</p>
+              <p id="podcastDesc" style="color:var(--text-subdued);font-size:13px;margin-top:8px;"></p>
+            </div>
+          </div>
+          <div class="playlist-detail-actions">
+            <button class="btn-playlist-play" id="podcastPlayLatest"><i class="fa-solid fa-play"></i></button>
+            <button class="btn-playlist-action" id="podcastMarkAllPlayed"><i class="fa-solid fa-check-double"></i></button>
+          </div>
+          <div class="podcast-episodes" id="podcastEpisodes"></div>
+        </div>
+      </section>      <!-- Album Detail Page -->
+      <section class="page" id="page-album">
+        <div class="playlist-detail-header">
+          <div class="playlist-detail-art" id="albumDetailArt">
+            <i class="fa-solid fa-compact-disc"></i>
+          </div>
+          <div class="playlist-detail-info">
+            <p class="playlist-detail-type">ALBUM</p>
+            <h2 id="albumDetailTitle">Album Title</h2>
+            <p class="playlist-detail-desc" id="albumDetailArtist">Artist</p>
+            <div class="playlist-detail-meta">
+              <span id="albumDetailYear">—</span>
+              <span>·</span>
+              <span id="albumDetailGenre">—</span>
+              <span>·</span>
+              <span id="albumDetailCount">0 songs</span>
+            </div>
+          </div>
+        </div>
+        <div class="playlist-detail-actions">
+          <button class="btn-playlist-play" id="albumPlayBtn"><i class="fa-solid fa-play"></i></button>
+          <button class="btn-playlist-action" id="albumShuffleBtn"><i class="fa-solid fa-shuffle"></i></button>
+        </div>
+        <div class="library-songs">
+          <table class="song-table">
+            <thead>
+              <tr><th>#</th><th>Title</th><th>Artist</th><th>Duration</th></tr>
+            </thead>
+            <tbody id="albumBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Beat Studio Page -->
+      <section class="page" id="page-ai-music">
+        <!-- Tabs: Beat Maker / AI Music Gen -->
+        <div class="studio-tabs">
+          <button class="studio-tab active" data-studio-tab="beat-maker"><i class="fa-solid fa-drum"></i> Beat Maker</button>
+          <button class="studio-tab" data-studio-tab="ai-gen"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Music</button>
+        </div>
+
+        <!-- ====== BEAT MAKER TAB ====== -->
+        <div class="studio-tab-content active" id="studio-beat-maker">
+          <div class="beat-studio-header">
+            <div class="beat-studio-title">
+              <div class="beat-studio-icon">
+                <i class="fa-solid fa-drum"></i>
+                <div class="beat-icon-pulse"></div>
+              </div>
+              <div>
+                <h2>Beat Studio</h2>
+                <p class="beat-studio-sub">Create your own beats — no AI needed, just pure sound</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transport Controls -->
+          <div class="beat-transport">
+            <div class="transport-left">
+              <button class="transport-btn transport-play" id="beatPlayBtn" title="Play / Stop">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button class="transport-btn" id="beatClearBtn" title="Clear Pattern">
+                <i class="fa-solid fa-eraser"></i>
+              </button>
+              <button class="transport-btn" id="beatRandomBtn" title="Randomize">
+                <i class="fa-solid fa-shuffle"></i>
+              </button>
+              <div class="transport-divider"></div>
+              <div class="transport-bpm">
+                <label>BPM</label>
+                <div class="bpm-control">
+                  <button class="bpm-btn" id="bpmDown">−</button>
+                  <input type="number" id="beatBpm" value="90" min="40" max="300">
+                  <button class="bpm-btn" id="bpmUp">+</button>
+                </div>
+                <input type="range" id="beatBpmSlider" min="40" max="300" value="90" class="bpm-slider">
+              </div>
+              <div class="transport-divider"></div>
+              <div class="transport-swing">
+                <label>Swing</label>
+                <input type="range" id="beatSwing" min="0" max="100" value="0" class="bpm-slider" style="width:60px;">
+                <span id="beatSwingVal" style="font-size:11px;color:var(--text-secondary);min-width:24px;">0%</span>
+              </div>
+            </div>
+            <div class="transport-right">
+              <div class="beat-pattern-select">
+                <label>Pattern</label>
+                <select id="beatPatternSelect">
+                  <option value="custom">🎨 Custom</option>
+                  <option value="four-on-floor">🪩 Four on the Floor</option>
+                  <option value="trap">🔥 Trap</option>
+                  <option value="hiphop">🎤 Hip Hop</option>
+                  <option value="lofi">☕ Lo-Fi</option>
+                  <option value="dnb">⚡ Drum & Bass</option>
+                  <option value="rock">🎸 Rock</option>
+                  <option value="house">🏠 House</option>
+                </select>
+              </div>
+              <button class="beat-export-btn" id="beatExportBtn">
+                <i class="fa-solid fa-download"></i>
+                <span>Export WAV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step Sequencer -->
+          <div class="beat-sequencer">
+            <div class="seq-header">
+              <div class="seq-label-col">Track</div>
+              <div class="seq-steps" id="seqStepNumbers"></div>
+            </div>
+            <div class="seq-tracks" id="seqTracks">
+              <!-- Tracks rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Track Volume / Mixer -->
+          <div class="beat-mixer" id="beatMixer">
+            <div class="mixer-header">
+              <span>Mixer</span>
+            </div>
+            <div class="mixer-channels" id="mixerChannels">
+              <!-- Channels rendered by JS -->
+            </div>
+            <div class="mixer-master">
+              <div class="mixer-channel master-channel">
+                <span class="mixer-label">Master</span>
+                <input type="range" id="beatMasterVol" min="0" max="100" value="75" class="mixer-slider" orient="vertical">
+                <span class="mixer-val" id="beatMasterVolVal">75</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== AI MUSIC GENERATOR TAB ====== -->
+        <div class="studio-tab-content" id="studio-ai-gen">
+          <div id="aiMusicGenContainer"></div>
+        </div>
+
+      </section>
+
     </main>
   </div>
 
@@ -468,7 +868,9 @@
     </div>
 
     <div class="player-right">
-      <button class="control-btn-sm" id="queueBtn"><i class="fa-solid fa-list"></i></button>          <button class="control-btn-sm" id="connectBtn"><i class="fa-solid fa-display"></i></button>
+      <button class="control-btn-sm" id="lyricsBtn" title="Lyrics"><i class="fa-solid fa-file-lines"></i></button>
+      <button class="control-btn-sm" id="queueBtn"><i class="fa-solid fa-list"></i></button>
+      <button class="control-btn-sm" id="connectBtn"><i class="fa-solid fa-display"></i></button>
       <div class="volume-control">
         <button class="control-btn-sm" id="muteBtn"><i class="fa-solid fa-volume-high"></i></button>
         <div class="volume-bar" id="volumeBar">
@@ -480,15 +882,80 @@
     </div>
   </footer>
 
+  <!-- Lyrics Panel -->
+  <div class="lyrics-panel" id="lyricsPanel">
+    <div class="queue-header">
+      <h3>Lyrics</h3>
+      <button class="queue-close" id="closeLyricsBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="lyrics-body" id="lyricsBody">
+      <p class="queue-empty" id="lyricsEmpty">Select a song to see its lyrics</p>
+      <div class="lyrics-content" id="lyricsContent" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- YouTube Search Modal -->
+  <div class="modal-overlay" id="ytSearchModal">
+    <div class="modal" style="max-width:600px;max-height:80vh;">
+      <div class="modal-header">
+        <h2><i class="fa-brands fa-youtube" style="color:#ff0000;"></i> Search YouTube</h2>
+        <button class="modal-close" id="closeYTSearchBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Search for a song</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="ytSearchInput" placeholder="e.g. Bohemian Rhapsody" style="flex:1;">
+            <button class="btn-add-song" id="ytSearchBtn"><i class="fa-solid fa-search"></i></button>
+          </div>
+        </div>
+        <div class="yt-results" id="ytResults">
+          <p style="color:var(--text-secondary);text-align:center;padding:24px;">Search for a song to see YouTube results</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add RSS Feed Modal -->
+  <div class="modal-overlay" id="addRssModal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header">
+        <h2>Add Podcast RSS Feed</h2>
+        <button class="modal-close" id="closeRssModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>RSS Feed URL</label>
+          <input type="url" id="rssUrlInput" placeholder="https://example.com/feed.xml">
+        </div>
+        <div class="form-group">
+          <label>Or try one of these:</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="filter-btn" data-rss="https://feeds.simplecast.com/54nAGcIl">The Daily</button>
+            <button class="filter-btn" data-rss="https://feeds.simplecast.com/IMcmgs4p">TED Talks Daily</button>
+            <button class="filter-btn" data-rss="https://feeds.megaphone.fm/ESP6123447109">Science Friday</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="cancelRssBtn">Cancel</button>
+        <button class="btn-add-song" id="confirmRssBtn">Add Podcast</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Context Menu -->
   <div class="context-menu" id="contextMenu">
     <div class="context-menu-item" data-action="play"><i class="fa-solid fa-play"></i> Play</div>
     <div class="context-menu-item" data-action="play-next"><i class="fa-solid fa-forward-step"></i> Play Next</div>
+    <div class="context-menu-item" data-action="add-to-queue"><i class="fa-solid fa-list-ol"></i> Add to Queue</div>
     <div class="context-menu-divider"></div>
     <div class="context-menu-item" data-action="like"><i class="fa-regular fa-heart"></i> Like</div>
     <div class="context-menu-item" data-action="add-to-playlist"><i class="fa-solid fa-list"></i> Add to Playlist</div>
-    <div class="context-menu-item" data-action="remove"><i class="fa-solid fa-trash-can"></i> Remove</div>
+    <div class="context-menu-item" data-action="view-album"><i class="fa-solid fa-compact-disc"></i> View Album</div>
+    <div class="context-menu-item" data-action="view-artist"><i class="fa-solid fa-user"></i> View Artist</div>
     <div class="context-menu-divider"></div>
+    <div class="context-menu-item" data-action="remove"><i class="fa-solid fa-trash-can"></i> Remove</div>
     <div class="context-menu-item" data-action="share"><i class="fa-solid fa-share-nodes"></i> Share</div>
   </div>
 
@@ -608,26 +1075,68 @@
           <input type="text" id="songArtist" placeholder="Enter artist name" maxlength="100">
         </div>
         <div class="form-group">
+          <label for="songAlbum">Album (optional)</label>
+          <input type="text" id="songAlbum" placeholder="Enter album name" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="songGenre">Genre (optional)</label>
+          <select id="songGenre" style="padding:12px 16px;border-radius:6px;border:1px solid var(--bg-highlight);background:var(--bg-secondary);color:var(--text-primary);font-size:14px;">
+            <option value="">Select genre...</option>
+            <option value="rock">Rock</option>
+            <option value="pop">Pop</option>
+            <option value="jazz">Jazz</option>
+            <option value="hip-hop">Hip Hop</option>
+            <option value="electronic">Electronic</option>
+            <option value="classical">Classical</option>
+            <option value="rnb">R&B</option>
+            <option value="country">Country</option>
+            <option value="metal">Metal</option>
+            <option value="lofi">Lo-Fi</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
           <label for="songDuration">Duration (seconds)</label>
           <input type="number" id="songDuration" placeholder="e.g. 240" min="1" max="3600">
         </div>
         <div class="form-group">
-          <label for="songFile">Audio File (MP3, WAV, etc.)</label>
-          <div class="file-upload" id="fileUploadArea">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <p>Click to browse or drag audio file here</p>
-            <input type="file" id="songFile" accept="audio/*" hidden>
+          <label>Source</label>
+          <div style="display:flex;gap:12px;">
+            <label class="radio-source" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;border:2px solid var(--accent-color);background:rgba(30,215,96,0.05);cursor:pointer;">
+              <input type="radio" name="songSource" value="local" checked style="accent-color:var(--accent-color);">
+              <i class="fa-solid fa-computer"></i> Local File
+            </label>
+            <label class="radio-source" style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:8px;border:2px solid var(--border-color);cursor:pointer;">
+              <input type="radio" name="songSource" value="youtube" style="accent-color:#ff0000;">
+              <i class="fa-brands fa-youtube" style="color:#ff0000;"></i> YouTube
+            </label>
           </div>
-          <span class="file-name" id="fileName"></span>
         </div>
-        <div class="form-group">
-          <label for="songCover">Cover Art (optional)</label>
-          <div class="file-upload small" id="coverUploadArea">
-            <i class="fa-solid fa-image"></i>
-            <p>Upload cover image</p>
-            <input type="file" id="songCover" accept="image/*" hidden>
+        <div id="localFileSection">
+          <div class="form-group">
+            <label for="songFile">Audio File (MP3, WAV, etc.)</label>
+            <div class="file-upload" id="fileUploadArea">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p>Click to browse or drag audio file here</p>
+              <input type="file" id="songFile" accept="audio/*" hidden>
+            </div>
+            <span class="file-name" id="fileName"></span>
           </div>
-          <span class="file-name" id="coverName"></span>
+          <div class="form-group">
+            <label for="songCover">Cover Art (optional)</label>
+            <div class="file-upload small" id="coverUploadArea">
+              <i class="fa-solid fa-image"></i>
+              <p>Upload cover image</p>
+              <input type="file" id="songCover" accept="image/*" hidden>
+            </div>
+            <span class="file-name" id="coverName"></span>
+          </div>
+        </div>
+        <div id="ytSection" style="display:none;">
+          <div class="form-group">
+            <label>YouTube Video URL or ID</label>
+            <input type="text" id="ytSongUrl" placeholder="e.g. https://youtube.com/watch?v=dQw4w9WgXcQ">
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -757,6 +1266,7 @@
   <!-- Now Playing Full-Screen View -->
   <div class="now-playing-fullscreen" id="nowPlayingFullscreen">
     <div class="np-backdrop" id="npBackdrop"></div>
+      <canvas class="np-visualizer-canvas" id="npVisualizer"></canvas>
     <div class="np-content">
       <div class="np-top">
         <button class="np-close" id="npCloseBtn"><i class="fa-solid fa-chevron-down"></i></button>
@@ -778,6 +1288,7 @@
           </div>
           <div class="np-actions">
             <button class="np-action-btn" id="npLikeBtn"><i class="fa-regular fa-heart"></i></button>
+            <button class="np-action-btn" id="npLyricsBtn" title="Lyrics"><i class="fa-solid fa-file-lines"></i></button>
           </div>
         </div>
         <div class="np-progress-section">
@@ -810,9 +1321,16 @@
     </div>
   </div>
 
+  <!-- Hidden YouTube Player -->
+  <div id="youtubePlayer" style="position:absolute;bottom:-9999px;left:-9999px;width:1px;height:1px;"></div>
+
   <!-- Hidden Audio Element -->
   <audio id="audioPlayer"></audio>
 
-  <script src="script.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+<script src="script.js"></script>
+<script src="features.js"></script>  <script src="ai_music_discover.js"></script>
+  <script src="ai_music_generator.js"></script>
 </body>
 </html>

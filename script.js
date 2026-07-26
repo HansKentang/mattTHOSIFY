@@ -12,6 +12,7 @@ const state = {
   isMuted: false,
   volume: 70,
   queue: [],
+  customQueue: [],
   searchQuery: '',
   currentPage: 'home',
   currentPlaylist: 'my-library',
@@ -23,8 +24,17 @@ const state = {
     accentColor: '#1ed760',
     quality: 'normal',
     crossfade: false,
+    crossfadeDuration: 3,
+    gapless: false,
     autoplay: true,
     profilePic: null,
+    ytApiKey: '',
+    spotifyClientId: '',
+    spotifySecret: '',
+    spotifyToken: null,
+    spotifyTokenExpiry: null,
+    eqPreset: 'flat',
+    eqValues: {32:0,64:0,125:0,250:0,500:0,1000:0,2000:0,4000:0,8000:0,16000:0},
   },
   sleepTimer: {
     active: false,
@@ -33,9 +43,23 @@ const state = {
   },
   contextSongId: null,
   currentArtist: null,
+  currentAlbumId: null,
   playlists: [],
   currentPlaylistId: null,
   recentlyPlayed: [],
+  playCounts: {},
+  listeningHistory: [],
+  podcasts: [],
+  currentPodcastId: null,
+  genres: [],
+  eqNodes: null,
+  audioCtx: null,
+  ytPlayer: null,
+  ytReady: false,
+  ytCurrentVideoId: null,
+  isYtPlaying: false,
+  npIsDragging: false,
+  isCrossfading: false,
 };
 
 // ---- DOM refs ----
@@ -115,7 +139,7 @@ $$('.settings-panel').forEach(p => { settingsPanels[p.id] = p; });
 const settingsDisplayName = $('#settingsDisplayName');
 const saveDisplayName = $('#saveDisplayName');
 const settingsQuality = $('#settingsQuality');
-const settingsCrossfade = $('#settingsCrossfade');
+const settingsCrossfade = $('#settingsCrossfadeDuration');
 const settingsAutoplay = $('#settingsAutoplay');
 const colorOptions = $$('.color-option');
 const customColorPicker = $('#customColorPicker');
@@ -281,6 +305,10 @@ function saveState() {
       settings: state.settings,
       playlists: state.playlists,
       recentlyPlayed: state.recentlyPlayed,
+      playCounts: state.playCounts,
+      listeningHistory: state.listeningHistory.slice(-500),
+      podcasts: state.podcasts,
+      customQueue: state.customQueue,
     };
     localStorage.setItem('matthosify_state', JSON.stringify(data));
   } catch (e) {
@@ -301,6 +329,10 @@ function loadState() {
     state.likedSongs = new Set(data.likedSongs || []);
     state.playlists = data.playlists || [];
     state.recentlyPlayed = data.recentlyPlayed || [];
+    state.playCounts = data.playCounts || {};
+    state.listeningHistory = data.listeningHistory || [];
+    state.podcasts = data.podcasts || [];
+    state.customQueue = data.customQueue || [];
     if (data.settings) state.settings = { ...state.settings, ...data.settings };
     return true;
   } catch (e) {
@@ -743,7 +775,8 @@ function renderAll() {
 function loadSettingsUI() {
   settingsDisplayName.value = state.settings.displayName || 'Matthosify User';
   settingsQuality.value = state.settings.quality || 'normal';
-  settingsCrossfade.checked = state.settings.crossfade || false;
+  if (settingsCrossfade && settingsCrossfade.type !== 'range') settingsCrossfade.checked = state.settings.crossfade || false;
+  // Crossfade duration is handled in features.js
   settingsAutoplay.checked = state.settings.autoplay !== false;
 
   // Update profile pic preview
@@ -1630,10 +1663,12 @@ settingsQuality.addEventListener('change', () => {
 });
 
 // Settings: Crossfade
-settingsCrossfade.addEventListener('change', () => {
-  state.settings.crossfade = settingsCrossfade.checked;
-  saveState();
-});
+if (settingsCrossfade && settingsCrossfade.type === 'checkbox') {
+  settingsCrossfade.addEventListener('change', () => {
+    state.settings.crossfade = settingsCrossfade.checked;
+    saveState();
+  });
+}
 
 // Settings: Autoplay
 settingsAutoplay.addEventListener('change', () => {
