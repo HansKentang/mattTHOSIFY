@@ -18,7 +18,7 @@ const FL = {
   interval: null,
   audioCtx: null,
   _initialized: false,
-  currentKit: 'synthkit',
+  currentKit: 'hiphop',
   // Custom samples storage: trackId -> { name: 'filename.wav', data: base64ArrayBuffer, decoded: AudioBuffer|null }
   customSamples: {},
 
@@ -109,23 +109,164 @@ function getFLMelodyTrackNotes(trackId) {
 
 // ---- Stargate DAW Sample URLs (Public Domain) ----
 // Source: https://github.com/stargatedaw/stargate-sample-pack
-const FL_SAMPLE_BASE = 'https://raw.githubusercontent.com/stargatedaw/stargate-sample-pack/main/';
+const FL_STARGATE_BASE = 'https://raw.githubusercontent.com/stargatedaw/stargate-sample-pack/main/';
+// Pearl Master Studio acoustic drums (CC0)
+// Source: https://oramics.github.io/sampled/DRUMS/pearl-master-studio/
+const FL_PEARL_BASE = 'https://raw.githubusercontent.com/Oramics/sampled/master/';
 
-// ---- Sample Kits ----
+// Default base URL (Stargate)
+let FL_SAMPLE_BASE = FL_STARGATE_BASE;
+
+// ---- Sample Kits (Genre-based) ----
 // Percussion/fills tracks that stay consistent across kits
 const FL_KIT_FILLS = {
-  shaker:  'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-maracas.wav',
-  tamb:    'stargate-sample-pack/fugue-state-audio/drums/percussion/distkit-cowbell.wav',
-  cowbell: 'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-cowbell.wav',
-  conga:   'stargate-sample-pack/freesound/drums/bongo/219157__jagadamba__bongo01.wav',
-  bongo:   'stargate-sample-pack/freesound/drums/bongo/99752__menegass__bongo2.wav',
-  maracas: 'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-claves.wav',
+  shaker:  FL_STARGATE_BASE + 'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-maracas.wav',
+  tamb:    FL_STARGATE_BASE + 'stargate-sample-pack/fugue-state-audio/drums/percussion/distkit-cowbell.wav',
+  cowbell: FL_STARGATE_BASE + 'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-cowbell.wav',
+  conga:   FL_STARGATE_BASE + 'stargate-sample-pack/freesound/drums/bongo/219157__jagadamba__bongo01.wav',
+  bongo:   FL_STARGATE_BASE + 'stargate-sample-pack/freesound/drums/bongo/99752__menegass__bongo2.wav',
+  maracas: FL_STARGATE_BASE + 'stargate-sample-pack/fugue-state-audio/drums/percussion/x0xproc2-claves.wav',
 };
 
+// Genre-themed drum kits with real samples
 const FL_KITS = {
+  // === GENRE KITS ===
+  'hiphop': {
+    label: '🎤 Hip Hop',
+    desc: '808-driven boom bap · Heavy kicks & tight snares',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
+    map: {
+      kick:    'fugue-state-audio/drums/kicks/x0xproc1-kick.wav',
+      snare:   'fugue-state-audio/drums/snares/x0xproc1-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/x0xproc1-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/x0xproc1-hatopen.wav',
+      clap:    'fugue-state-audio/drums/claps/x0xproc1-clap.wav',
+      snare2:  'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
+      tom_h:   'fugue-state-audio/drums/toms/x0xproc1-hitom.wav',
+      tom_m:   'fugue-state-audio/drums/toms/x0xproc1-midtom.wav',
+      tom_l:   'fugue-state-audio/drums/toms/x0xproc1-lotom.wav',
+      crash:   'fugue-state-audio/drums/cymbals/x0xproc1-crash.wav',
+      ride:    'fugue-state-audio/drums/cymbals/x0xproc1-ride.wav',
+    }
+  },
+  'rock': {
+    label: '🎸 Rock',
+    desc: 'Acoustic live drums · Punchy & natural',
+    baseUrl: FL_PEARL_BASE,
+    prefix: '',
+    map: {
+      kick:    'DRUMS/pearl-master-studio/samples/kick-01.wav',
+      snare:   'DRUMS/pearl-master-studio/samples/snare-02.wav',
+      hihat_c: 'DRUMS/pearl-master-studio/samples/hihat-closed.wav',
+      hihat_o: 'DRUMS/pearl-master-studio/samples/hihat-open.wav',
+      clap:    'DRUMS/pearl-master-studio/samples/snare-03.wav',
+      snare2:  'DRUMS/pearl-master-studio/samples/snare-01.wav',
+      tom_h:   'DRUMS/pearl-master-studio/samples/tom-01.wav',
+      tom_m:   'DRUMS/pearl-master-studio/samples/tom-02.wav',
+      tom_l:   'DRUMS/pearl-master-studio/samples/tom-03.wav',
+      crash:   'DRUMS/pearl-master-studio/samples/crash-01.wav',
+      ride:    'DRUMS/pearl-master-studio/samples/ride-01.wav',
+    }
+  },
+  'phonk': {
+    label: '🔊 Phonk',
+    desc: 'Heavy 808s & cowbells · Dark & aggressive',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
+    map: {
+      kick:    'fugue-state-audio/drums/kicks/distkit-kick.wav',
+      snare:   'fugue-state-audio/drums/snares/distkit-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/distkit-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/distkit-hatopen.wav',
+      clap:    'fugue-state-audio/drums/claps/distkit-clap.wav',
+      snare2:  'fugue-state-audio/drums/snares/synthkit-snare.wav',
+      tom_h:   'fugue-state-audio/drums/toms/distkit-hitom.wav',
+      tom_m:   'fugue-state-audio/drums/toms/distkit-midtom.wav',
+      tom_l:   'fugue-state-audio/drums/toms/distkit-lotom.wav',
+      crash:   'fugue-state-audio/drums/cymbals/distkit-crash.wav',
+      ride:    'fugue-state-audio/drums/cymbals/distkit-ride.wav',
+    }
+  },
+  'electronic': {
+    label: '⚡ Electronic',
+    desc: 'Clean synth drums · Perfect for EDM',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
+    map: {
+      kick:    'fugue-state-audio/drums/kicks/synthkit-kick.wav',
+      snare:   'fugue-state-audio/drums/snares/synthkit-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/synthkit-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/synthkit-hatopen.wav',
+      clap:    'fugue-state-audio/drums/claps/synthkit-clap.wav',
+      snare2:  'fugue-state-audio/drums/snares/distkit-snare.wav',
+      tom_h:   'fugue-state-audio/drums/toms/synthkit-hitom.wav',
+      tom_m:   'fugue-state-audio/drums/toms/synthkit-midtom.wav',
+      tom_l:   'fugue-state-audio/drums/toms/synthkit-lotom.wav',
+      crash:   'fugue-state-audio/drums/cymbals/synthkit-crash.wav',
+      ride:    'fugue-state-audio/drums/cymbals/synthkit-ride.wav',
+    }
+  },
+  'lofi': {
+    label: '☕ Lo-Fi',
+    desc: 'Warm & muffled · Relaxed vintage beats',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
+    map: {
+      kick:    'fugue-state-audio/drums/kicks/sdbkit-kick.wav',
+      snare:   'fugue-state-audio/drums/snares/sdbkit-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/sdbkit-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/sdbkit-hatopen.wav',
+      clap:    'fugue-state-audio/drums/claps/sdbkit-clap.wav',
+      snare2:  'fugue-state-audio/drums/snares/x0xproc1-snare.wav',
+      tom_h:   'fugue-state-audio/drums/toms/sdbkit-hitom.wav',
+      tom_m:   'fugue-state-audio/drums/toms/sdbkit-midtom.wav',
+      tom_l:   'fugue-state-audio/drums/toms/sdbkit-lotom.wav',
+    }
+  },
+  'trap': {
+    label: '⛓ Trap',
+    desc: 'Rolling hi-hats & heavy 808s',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
+    map: {
+      kick:    'fugue-state-audio/drums/kicks/x0xproc2-kick.wav',
+      snare:   'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/x0xproc2-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/x0xproc2-hatopen.wav',
+      clap:    'fugue-state-audio/drums/claps/x0xproc2-clap.wav',
+      snare2:  'fugue-state-audio/drums/snares/distkit-snare.wav',
+      tom_h:   'fugue-state-audio/drums/toms/x0xproc2-hitom.wav',
+      tom_m:   'fugue-state-audio/drums/toms/x0xproc2-midtom.wav',
+      tom_l:   'fugue-state-audio/drums/toms/x0xproc2-lotom.wav',
+      crash:   'fugue-state-audio/drums/cymbals/x0xproc2-cymbal.wav',
+    }
+  },
+  'jazz': {
+    label: '🎷 Jazz',
+    desc: 'Smooth acoustic drums · Ride & brush textures',
+    baseUrl: FL_PEARL_BASE,
+    prefix: '',
+    map: {
+      kick:    'DRUMS/pearl-master-studio/samples/kick-01.wav',
+      snare:   'DRUMS/pearl-master-studio/samples/snare-01.wav',
+      hihat_c: 'DRUMS/pearl-master-studio/samples/hihat-closed.wav',
+      hihat_o: 'DRUMS/pearl-master-studio/samples/hihat-open.wav',
+      clap:    'DRUMS/pearl-master-studio/samples/snare-03.wav',
+      snare2:  'DRUMS/pearl-master-studio/samples/snare-02.wav',
+      tom_h:   'DRUMS/pearl-master-studio/samples/tom-01.wav',
+      tom_m:   'DRUMS/pearl-master-studio/samples/tom-02.wav',
+      tom_l:   'DRUMS/pearl-master-studio/samples/tom-03.wav',
+      ride:    'DRUMS/pearl-master-studio/samples/ride-02.wav',
+      crash:   'DRUMS/pearl-master-studio/samples/crash-02.wav',
+    }
+  },
+  // === LEGACY KITS (kept for backward compatibility) ===
   'synthkit': {
     label: '🔊 Synth Kit',
-    desc: 'Modern, clean electronic sounds',
+    desc: 'Modern synthesized electronic drums',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/synthkit-kick.wav',
       snare:   'fugue-state-audio/drums/snares/synthkit-snare.wav',
@@ -142,7 +283,9 @@ const FL_KITS = {
   },
   'distkit': {
     label: '⚡ Dist Kit',
-    desc: 'Aggressive, distorted beats',
+    desc: 'Aggressive distorted drums',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/distkit-kick.wav',
       snare:   'fugue-state-audio/drums/snares/distkit-snare.wav',
@@ -158,8 +301,10 @@ const FL_KITS = {
     }
   },
   'sdbkit': {
-    label: '🥁 SDB Kit',
-    desc: 'Standard acoustic-ish kit',
+    label: '🥁 Standard Kit',
+    desc: 'Standard acoustic-ish samples',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/sdbkit-kick.wav',
       snare:   'fugue-state-audio/drums/snares/sdbkit-snare.wav',
@@ -173,8 +318,10 @@ const FL_KITS = {
     }
   },
   'x0xproc1': {
-    label: '🎛 808 Kit',
-    desc: 'Classic 808 drum machine',
+    label: '🎛 808 Machine',
+    desc: 'Classic Roland 808 drum machine',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/x0xproc1-kick.wav',
       snare:   'fugue-state-audio/drums/snares/x0xproc1-snare.wav',
@@ -190,8 +337,10 @@ const FL_KITS = {
     }
   },
   'x0xproc2': {
-    label: '🎛 909 Kit',
-    desc: 'Classic 909 drum machine',
+    label: '🎛 909 Machine',
+    desc: 'Classic Roland 909 drum machine',
+    baseUrl: FL_STARGATE_BASE,
+    prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/x0xproc2-kick.wav',
       snare:   'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
@@ -208,23 +357,24 @@ const FL_KITS = {
 };
 
 // Build the full FL_SAMPLE_MAP from current kit + fills
+// Returns map of trackId -> full URL
 function buildFLSampleMap(kitName) {
-  const kit = FL_KITS[kitName] || FL_KITS['synthkit'];
-  const kitPrefix = 'stargate-sample-pack/';
+  const kit = FL_KITS[kitName] || FL_KITS['hiphop'];
   const map = {};
-  // Apply kit samples
+  // Apply kit samples using per-kit baseUrl + prefix
   for (const [trackId, path] of Object.entries(kit.map)) {
-    map[trackId] = kitPrefix + path;
+    map[trackId] = kit.baseUrl + (kit.prefix || '') + path;
   }
   // Apply fills (fallback for tracks not in the kit)
-  for (const [trackId, path] of Object.entries(FL_KIT_FILLS)) {
-    if (!map[trackId]) map[trackId] = path;
+  // FL_KIT_FILLS already stores full URLs
+  for (const [trackId, url] of Object.entries(FL_KIT_FILLS)) {
+    if (!map[trackId]) map[trackId] = url;
   }
   return map;
 }
 
-// Current sample map (default to synthkit)
-let FL_SAMPLE_MAP = buildFLSampleMap('synthkit');
+// Current sample map (default to hiphop)
+let FL_SAMPLE_MAP = buildFLSampleMap('hiphop');
 
 const FL_KIT_STORAGE_KEY = 'matthosify_fl_kit';
 
@@ -254,25 +404,24 @@ async function switchFLKit(kitName) {
   
   // Load new kit samples + fill samples
   const kit = FL_KITS[kitName];
-  const kitPrefix = 'stargate-sample-pack/';
   
-  // Build combined list: kit tracks + fill tracks (fills override as fallback)
+  // Build combined list: kit tracks (with per-kit baseUrl) + fill tracks
   const allSamples = [];
   for (const [trackId, path] of Object.entries(kit.map)) {
-    allSamples.push({ trackId, path: kitPrefix + path });
+    const url = kit.baseUrl + (kit.prefix || '') + path;
+    allSamples.push({ trackId, url });
   }
-  for (const [trackId, path] of Object.entries(FL_KIT_FILLS)) {
+  for (const [trackId, url] of Object.entries(FL_KIT_FILLS)) {
     // Don't add if the kit already has this track
     if (!kit.map[trackId]) {
-      allSamples.push({ trackId, path });
+      allSamples.push({ trackId, url });
     }
   }
   
-  const promises = allSamples.map(({ trackId, path }) => {
+  const promises = allSamples.map(({ trackId, url }) => {
     // Skip if user has a custom sample for this track
     if (FL.customSamples && FL.customSamples[trackId]) return Promise.resolve();
     
-    const url = FL_SAMPLE_BASE + path;
     return fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -325,8 +474,8 @@ function preloadFLSamples() {
   const statusBar = document.getElementById('flStatusBar');
   if (statusBar) statusBar.innerHTML = '<span class="fl-status-msg">⏳ Loading drum samples...</span>';
   
-  const promises = entries.map(([trackId, path]) => {
-    const url = FL_SAMPLE_BASE + path;
+  const promises = entries.map(([trackId, url]) => {
+    // url is already a full URL from buildFLSampleMap
     return fetch(url)
       .then(res => {
         if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1385,7 +1534,8 @@ async function flResetSample(tIdx) {
     const ctx = getFLAudioCtx();
     if (ctx) {
       try {
-        const res = await fetch(FL_SAMPLE_BASE + defaultPath);
+        // FL_SAMPLE_MAP[track.id] already stores the full URL
+        const res = await fetch(defaultPath);
         if (res.ok) {
           const ab = await res.arrayBuffer();
           const buf = await ctx.decodeAudioData(ab);
