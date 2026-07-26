@@ -1106,6 +1106,8 @@ function addFLPattern() {
   FL.melodyTracks.forEach(mt => {
     FL.melodyNotes[newId][mt.id] = (srcMelody[mt.id] || []).map(n => ({...n}));
   });
+  // Copy per-pattern swing
+  if (FL.patternSwings) FL.patternSwings[newId] = FL.patternSwings[FL.currPattern] || 0;
   FL.currPattern = newId;
   updateFLPatternSelect();
   renderFLChannelRack();
@@ -1125,6 +1127,7 @@ function deleteFLPattern(id) {
   if (ids.length <= 1) return;
   delete FL.patterns[id];
   delete FL.melodyNotes[id];
+  if (FL.patternSwings) delete FL.patternSwings[id];
   if (FL.currPattern === id) {
     FL.currPattern = ids.find(i => i !== id) || ids[0];
   }
@@ -1138,6 +1141,13 @@ function deleteFLPattern(id) {
 function selectFLPattern(id) {
   if (!FL.patterns[id]) return;
   FL.currPattern = Number(id);
+  // Update swing slider to match this pattern's swing
+  const swingSlider = document.getElementById('flSwing');
+  const swingVal = document.getElementById('flSwingVal');
+  if (swingSlider && FL.patternSwings && FL.patternSwings[id] !== undefined) {
+    swingSlider.value = FL.patternSwings[id];
+    if (swingVal) swingVal.textContent = FL.patternSwings[id] + '%';
+  }
   renderFLChannelRack();
   if (FL.viewMode === 'piano-roll') {
     renderFLPianoRoll();
