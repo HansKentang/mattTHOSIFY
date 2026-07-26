@@ -107,19 +107,20 @@
 
     const searchInput = document.getElementById('flSlSearchInput');
     const q = query || (searchInput ? searchInput.value.trim() : '');
-    if (!q) return;
+    // Allow searching without a query when a category filter is active
+    if (!q && slCurrentCategory === 'all') return;
 
     const pageNum = page || 1;
     slSetStatus('🔍 Searching...', 'info');
 
     let filterParts = ['license:"Creative Commons 0"'];
-    filterParts.push(q);
+    if (q) filterParts.push(q);
     if (slCurrentCategory !== 'all' && SL_CATS[slCurrentCategory]) {
       filterParts.push('(' + SL_CATS[slCurrentCategory] + ')');
     }
 
     const params = new URLSearchParams({
-      query: q,
+      query: q || '*',
       filter: filterParts.join(' '),
       sort: 'rating_desc',
       fields: 'id,name,username,license,tags,duration,previews,download_count',
