@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Matthosify - Music for Everyone</title>
   <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="freesound_browser.css?v=1">
   <link rel="stylesheet" href="fl_studio.css?v=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -287,6 +288,7 @@
           <button class="settings-tab" data-tab="youtube"><i class="fa-brands fa-youtube"></i> YouTube</button>
           <button class="settings-tab" data-tab="spotify"><i class="fa-brands fa-spotify"></i> Spotify</button>
           <button class="settings-tab" data-tab="huggingface"><i class="fa-solid fa-face-smile"></i> Hugging Face</button>
+          <button class="settings-tab" data-tab="freesound"><i class="fa-solid fa-headphones"></i> Freesound</button>
           <button class="settings-tab" data-tab="eq"><i class="fa-solid fa-chart-bar"></i> Equalizer</button>
           <button class="settings-tab" data-tab="appearance"><i class="fa-solid fa-palette"></i> Appearance</button>
           <button class="settings-tab" data-tab="about"><i class="fa-solid fa-circle-info"></i> About</button>
@@ -444,6 +446,28 @@
             <div class="form-group" style="margin-top:12px;">
               <button class="btn-library-action" id="testHfToken"><i class="fa-solid fa-vial"></i> Test Token</button>
               <span style="font-size:11px;color:var(--text-subdued);margin-left:8px;">Validates your token, no credits used</span>
+            </div>
+          </div>
+        </div>
+        <div class="settings-panel" id="settings-freesound">
+          <div class="settings-section">
+            <h3><i class="fa-solid fa-headphones" style="color:var(--accent-color);"></i> Freesound.org Sound Browser</h3>
+            <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">
+              Search and import millions of free CC0 sounds from Freesound.org.
+              Get a free API key at 
+              <a href="https://freesound.org/apiv2/apply" target="_blank" style="color:var(--accent-color);text-decoration:underline;">freesound.org/apiv2/apply</a>.
+              Free tier: 60 requests/minute, 2,000 requests/day.
+            </p>
+            <div class="form-group">
+              <label>Freesound API Key</label>
+              <div class="settings-input-row">
+                <input type="password" id="settingsFsKey" placeholder="Enter your API key" style="flex:1;">
+                <button class="btn-save" id="saveFsKey">Save</button>
+              </div>
+              <span class="file-name" id="fsKeyStatus"></span>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+              <button class="btn-library-action" id="testFsKey"><i class="fa-solid fa-vial"></i> Test API Key</button>
             </div>
           </div>
         </div>
@@ -723,6 +747,7 @@
         <div class="studio-tabs">
           <button class="studio-tab active" data-studio-tab="fl-studio"><i class="fa-solid fa-sliders"></i> Beat Studio</button>
           <button class="studio-tab" data-studio-tab="ai-gen"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Music</button>
+          <button class="studio-tab" data-studio-tab="sounds"><i class="fa-solid fa-headphones"></i> Sounds</button>
         </div>
 
         <!-- ====== BEAT STUDIO (Merged FL Studio + Beat Maker) ====== -->
@@ -899,6 +924,73 @@
         <!-- ====== AI MUSIC GENERATOR TAB ====== -->
         <div class="studio-tab-content" id="studio-ai-gen">
           <div id="aiMusicGenContainer"></div>
+        </div>
+        <!-- ====== SOUNDS / FREESOUND TAB ====== -->
+        <div class="studio-tab-content" id="studio-sounds">
+          <div class="fs-container">
+            <div class="fs-header">
+              <h3><i class="fa-solid fa-headphones"></i> Freesound.org Sound Browser</h3>
+              <p style="color:var(--text-secondary);font-size:13px;">Search millions of free CC0 sounds — drums, loops, FX, instruments</p>
+            </div>
+            <div class="fs-api-setup" id="fsApiSetup">
+              <div class="fs-setup-card">
+                <i class="fa-solid fa-key" style="font-size:32px;color:var(--accent-color);margin-bottom:12px;"></i>
+                <h4>Connect to Freesound.org</h4>
+                <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Get a free API key at <a href="https://freesound.org/apiv2/apply" target="_blank" style="color:var(--accent-color);text-decoration:underline;">freesound.org/apiv2/apply</a></p>
+                <div class="fs-api-input-row">
+                  <input type="password" id="fsApiKeyInput" placeholder="Paste your Freesound API key here..." style="flex:1;">
+                  <button class="btn-add-song" id="fsSaveKeyBtn"><i class="fa-solid fa-check"></i> Connect</button>
+                </div>
+              </div>
+            </div>
+            <div class="fs-main" id="fsMain" style="display:none;">
+              <div class="fs-search-bar">
+                <div class="fs-search-input-wrapper">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="fsSearchInput" placeholder="Search for drums, loops, FX, instruments..." autocomplete="off">
+                  <button class="btn-add-song" id="fsSearchBtn"><i class="fa-solid fa-search"></i> Search</button>
+                </div>
+                <div class="fs-filters">
+                  <button class="filter-btn active" data-fs-cat="all">All</button>
+                  <button class="filter-btn" data-fs-cat="drums">🥁 Drums</button>
+                  <button class="filter-btn" data-fs-cat="loops">🔄 Loops</button>
+                  <button class="filter-btn" data-fs-cat="fx">✨ FX</button>
+                  <button class="filter-btn" data-fs-cat="instruments">🎹 Instruments</button>
+                  <button class="filter-btn" data-fs-cat="vocals">🎤 Vocals</button>
+                  <button class="filter-btn" data-fs-cat="ambient">🌿 Ambient</button>
+                  <button class="filter-btn" data-fs-fav>⭐ Favorites</button>
+                </div>
+              </div>
+              <div class="fs-status" id="fsStatus"></div>
+              <div class="fs-results" id="fsResults">
+                <div class="fs-empty">
+                  <i class="fa-solid fa-headphones" style="font-size:48px;color:var(--text-subdued);margin-bottom:12px;"></i>
+                  <p style="color:var(--text-secondary);">Search for sounds to get started</p>
+                  <p style="color:var(--text-subdued);font-size:12px;">Try: "kick drum", "vinyl crackle", "piano loop", "riser fx"</p>
+                </div>
+              </div>
+              <div class="fs-pagination" id="fsPagination" style="display:none;">
+                <button class="fl-btn-sm" id="fsPrevPage"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+                <span id="fsPageInfo" style="font-size:12px;color:var(--text-secondary);">Page 1</span>
+                <button class="fl-btn-sm" id="fsNextPage">Next <i class="fa-solid fa-chevron-right"></i></button>
+              </div>
+              <div class="fs-player" id="fsPlayer" style="display:none;">
+                <div class="fs-player-info">
+                  <span id="fsPlayerName" style="font-weight:600;">No sound selected</span>
+                  <span id="fsPlayerUser" style="color:var(--text-secondary);font-size:12px;"></span>
+                </div>
+                <div class="fs-player-controls">
+                  <button class="fl-btn-sm" id="fsPlayerPlay"><i class="fa-solid fa-play"></i></button>
+                  <div class="fs-progress-bar" id="fsProgressBar"><div class="fs-progress-fill" id="fsProgressFill"></div></div>
+                  <span id="fsPlayerTime" style="font-size:11px;color:var(--text-secondary);">0:00</span>
+                </div>
+                <div class="fs-player-actions">
+                  <button class="fl-btn-sm" id="fsPlayerFav" title="Favorite"><i class="fa-regular fa-heart"></i></button>
+                  <button class="fl-btn-sm" id="fsPlayerAdd" title="Add to Beat Maker"><i class="fa-solid fa-plus"></i> Import</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </section>
@@ -1411,5 +1503,6 @@
 <script src="features.js"></script>  <script src="ai_music_discover.js"></script>
   <script src="ai_music_generator.js"></script>
   <script src="fl_beat_maker.js?v=1"></script>
+  <script src="freesound_browser.js?v=1"></script>
 </body>
 </html>
