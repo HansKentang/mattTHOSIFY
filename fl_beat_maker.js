@@ -244,7 +244,7 @@ const FL_KITS = {
       tom_m:   'fugue-state-audio/drums/toms/x0xproc2-midtom.wav',
       tom_l:   'fugue-state-audio/drums/toms/x0xproc2-lotom.wav',
       crash:   'fugue-state-audio/drums/cymbals/x0xproc2-cymbal.wav',
-      ride:    'DM/LM-2/samples/ride.wav',
+      ride:    'fugue-state-audio/drums/cymbals/x0xproc1-ride.wav',
     }
   },
   'jazz': {
