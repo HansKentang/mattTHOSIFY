@@ -6,6 +6,7 @@
   <title>Matthosify - Music for Everyone</title>
   <link rel="stylesheet" href="styles.css?v=4">
   <link rel="stylesheet" href="freesound_browser.css?v=1">
+  <link rel="stylesheet" href="fl_sound_library.css?v=1">
   <link rel="stylesheet" href="fl_studio.css?v=1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -894,6 +895,46 @@
             </div>
           </div>
 
+          <!-- Sound Library Panel (inline Freesound browser) -->
+          <div class="fl-sound-library" id="flSoundLibrary" style="display:none;">
+            <div class="fl-sl-header">
+              <div class="fl-sl-title"><i class="fa-solid fa-headphones"></i> <span id="flSlTitle">Sound Library</span></div>
+              <div class="fl-sl-actions">
+                <button class="fl-btn-sm" id="flSlSearchBtn" title="Search"><i class="fa-solid fa-search"></i></button>
+                <button class="fl-btn-sm" id="flSlFavBtn" title="Favorites"><i class="fa-solid fa-heart"></i></button>
+                <button class="fl-btn-sm" id="flSlCloseBtn" title="Close"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+            <div class="fl-sl-search">
+              <input type="text" id="flSlSearchInput" placeholder="Search Freesound..." autocomplete="off">
+              <div class="fl-sl-cats">
+                <button class="filter-btn active" data-flsl-cat="all">All</button>
+                <button class="filter-btn" data-flsl-cat="drums">Drums</button>
+                <button class="filter-btn" data-flsl-cat="loops">Loops</button>
+                <button class="filter-btn" data-flsl-cat="fx">FX</button>
+                <button class="filter-btn" data-flsl-cat="instruments">Instruments</button>
+              </div>
+            </div>
+            <div class="fl-sl-status" id="flSlStatus"></div>
+            <div class="fl-sl-results" id="flSlResults">
+              <div class="fl-sl-empty"><i class="fa-solid fa-headphones"></i><p>Search for sounds or click 🔍 on a track</p></div>
+            </div>
+            <div class="fl-sl-now" id="flSlNow" style="display:none;">
+              <div class="fl-sl-now-info">
+                <span id="flSlNowName" style="font-weight:600;"></span>
+                <span id="flSlNowUser" style="color:var(--text-secondary);font-size:11px;"></span>
+              </div>
+              <div class="fl-sl-now-ctrl">
+                <button class="fl-btn-sm" id="flSlNowPlay"><i class="fa-solid fa-play"></i></button>
+                <div class="fl-sl-progress" id="flSlProgress"><div class="fl-sl-progress-fill" id="flSlProgressFill"></div></div>
+                <span id="flSlNowTime" style="font-size:11px;color:var(--text-secondary);">0:00</span>
+              </div>
+              <div class="fl-sl-now-actions">
+                <button class="fl-btn-sm" id="flSlReplaceBtn" title="Replace selected track sample"><i class="fa-solid fa-arrow-right-arrow-left"></i> Replace</button>
+                <button class="fl-btn-sm" id="flSlAddBtn" title="Add as new track"><i class="fa-solid fa-plus"></i> New Track</button>
+              </div>
+            </div>
+          </div>
           <!-- Unified Mixer with Per-Track Channels -->
           <div class="fl-mixer-container">
             <div class="fl-mixer-header">
@@ -1504,5 +1545,6 @@
   <script src="ai_music_generator.js"></script>
   <script src="fl_beat_maker.js?v=1"></script>
   <script src="freesound_browser.js?v=1"></script>
+  <script src="fl_sound_library.js?v=1"></script>
 </body>
 </html>

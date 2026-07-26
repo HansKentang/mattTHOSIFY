@@ -1199,6 +1199,7 @@ function renderFLChannelRack() {
           onclick="event.stopPropagation(); flToggleMute(${tIdx})" title="Mute">M</button>
         <button class="fl-btn-icon fl-btn-upload" 
           onclick="event.stopPropagation(); flUploadSample(${tIdx})" title="Upload custom sample (WAV)">📂</button>
+        <button class="fl-btn-icon fl-btn-browse" onclick="event.stopPropagation(); flBrowseSounds(${tIdx})" title="Browse Freesound for samples">🔍</button>
         ${hasCustom ? `<button class="fl-btn-icon fl-btn-reset" 
           onclick="event.stopPropagation(); flResetSample(${tIdx})" title="Reset to default sample">↺</button>` : ''}
       </div>
