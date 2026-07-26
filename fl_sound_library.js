@@ -269,7 +269,7 @@
     try {
       const res = await fetch(url);
       const arrayBuf = await res.arrayBuffer();
-      var audioCtx = (typeof FL !== "undefined" var audioCtx = new (window.AudioContext || window.webkitAudioContext)();var audioCtx = new (window.AudioContext || window.webkitAudioContext)(); FL.audioCtx) ? FL.audioCtx : new (window.AudioContext || window.webkitAudioContext)();
+      var audioCtx = (typeof FL !== "undefined" && FL.audioCtx) ? FL.audioCtx : new (window.AudioContext || window.webkitAudioContext)();
       const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
 
       if (slTargetTrack >= 0 && typeof FL !== 'undefined' && FL.tracks && FL.tracks[slTargetTrack]) {

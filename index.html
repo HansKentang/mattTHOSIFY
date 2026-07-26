@@ -774,6 +774,15 @@
                 <span id="flSwingVal" class="fl-swing-val">0%</span>
               </div>
               <div class="fl-divider"></div>
+              <div class="fl-bars-group">
+                <label class="fl-label">Bars</label>
+                <div class="fl-bars-control">
+                  <button class="fl-btn-tiny" id="flBarsDown" title="Remove 1 bar">−</button>
+                  <span id="flBarsDisplay" class="fl-bars-display">1</span>
+                  <button class="fl-btn-tiny" id="flBarsUp" title="Add 1 bar">+</button>
+                </div>
+              </div>
+              <div class="fl-divider"></div>
               <div class="fl-ptn-group">
                 <label class="fl-label">Pattern</label>
                 <select id="flPatternSelect" class="fl-select"></select>
@@ -818,7 +827,7 @@
               </div>
             </div>
             <div class="fl-menu-right">
-              <button class="fl-btn-clear" id="flClearBtn" title="Clear Pattern"><i class="fa-solid fa-eraser"></i></button>
+              <button class="fl-btn-clear" id="flClearBtn" title="Clear all beats &amp; melody (Delete key)"><i class="fa-solid fa-eraser"></i></button>
               <button class="fl-btn-random" id="flRandomBtn" title="Randomize"><i class="fa-solid fa-shuffle"></i></button>
             </div>
           </div>
@@ -840,17 +849,14 @@
             <div class="fl-view-toggle">
               <button class="fl-view-btn active" data-view="drums" title="Channel Rack">
                 <i class="fa-solid fa-drum"></i>
-                <span>Drums</span>
               </button>
               <button class="fl-view-btn" data-view="piano-roll" title="Piano Roll">
                 <i class="fa-solid fa-keyboard"></i>
-                <span>Melody</span>
               </button>
             </div>
             <div class="fl-export-group">
               <button class="fl-btn-export" id="flExportBtn" title="Export WAV">
                 <i class="fa-solid fa-download"></i>
-                <span>Export</span>
               </button>
             </div>
           </div>
@@ -936,10 +942,11 @@
             </div>
           </div>
           <!-- Unified Mixer with Per-Track Channels -->
-          <div class="fl-mixer-container">
-            <div class="fl-mixer-header">
+          <div class="fl-mixer-container" id="flMixerContainer">
+            <div class="fl-mixer-header" id="flMixerToggle" style="cursor:pointer;">
               <i class="fa-solid fa-sliders"></i>
               <span>Mixer</span>
+              <span style="margin-left:auto;font-size:10px;color:#666;" id="flMixerToggleIcon">▲</span>
             </div>
             <div class="fl-mixer-channels" id="flMixerChannels">
               <!-- Per-track channel strips rendered by JS -->

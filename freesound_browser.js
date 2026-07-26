@@ -40,6 +40,7 @@
     const playerAdd = document.getElementById('fsPlayerAdd');
 
     if (saveBtn) saveBtn.onclick = saveApiKey;
+    if (keyInput) keyInput.onkeydown = function(e) { if (e.key === 'Enter') saveApiKey(); };
     if (searchBtn) searchBtn.onclick = function() { doSearch(); };
     if (searchInput) searchInput.onkeydown = function(e) { if (e.key === 'Enter') doSearch(); };
     if (prevBtn) prevBtn.onclick = function() { if (fsPage > 1) { fsPage--; doSearch(null, fsPage); } };
@@ -270,11 +271,11 @@
     renderResults();
   }
 
-  function importSound(idx) {
+  async function importSound(idx) {
     var s = fsResults[idx];
     if (!s) return;
     var url = (s.previews && s.previews['preview-hq-mp3']) || (s.previews && s.previews['preview-lq-mp3']);
-    if (!url) return;
+    if (!url) { setStatus('❌ No preview URL available for this sound', 'error'); return; }
 
     // If FL Studio is active, add as a new track with this sample
     if (window.FL && window.FL.tracks) {
@@ -287,16 +288,35 @@
           short: 'FS',
           color: '#1ed760'
         });
-        // Store sample
-        if (!window.FL.samples) window.FL.samples = {};
-        window.FL.samples[trackId] = url;
-        // Add empty pattern data for current pattern
+        // Add empty pattern data for current pattern BEFORE loading
         if (window.FL.patterns && window.FL.patterns[window.FL.currPattern]) {
-          window.FL.patterns[window.FL.currPattern][trackId] = new Array(16).fill(null);
+          window.FL.patterns[window.FL.currPattern][trackId] = new Array(window.FL.stepLen || 16).fill(null);
         }
-        setStatus('✅ Added "' + s.name + '" to Channel Rack', 'success');
-        // Trigger re-render if render function exists
-        if (typeof window.renderFLChannelRack === 'function') window.renderFLChannelRack();
+        setStatus('⏳ Loading "' + s.name + '"...', 'info');
+        
+        // Fetch the audio and decode it into an AudioBuffer (required by the beat maker)
+        try {
+          var res = await fetch(url);
+          var arrayBuf = await res.arrayBuffer();
+          var ctx = window.FL.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+          var audioBuf = await ctx.decodeAudioData(arrayBuf);
+          
+          if (!window.FL.samples) window.FL.samples = {};
+          window.FL.samples[trackId] = audioBuf;
+          
+          setStatus('✅ Added "' + s.name + '" to Channel Rack', 'success');
+          // Trigger re-render if render function exists
+          if (typeof window.renderFLChannelRack === 'function') window.renderFLChannelRack();
+          if (typeof window.renderFLMixer === 'function') window.renderFLMixer();
+        } catch (err) {
+          setStatus('❌ Failed to load audio: ' + err.message, 'error');
+          // Clean up track on failure
+          var idx2 = window.FL.tracks.findIndex(function(t) { return t.id === trackId; });
+          if (idx2 >= 0) window.FL.tracks.splice(idx2, 1);
+          if (window.FL.patterns && window.FL.patterns[window.FL.currPattern]) {
+            delete window.FL.patterns[window.FL.currPattern][trackId];
+          }
+        }
       } else {
         setStatus('⚠️ Track already exists', 'info');
       }
@@ -370,6 +390,10 @@
     var settingsStatus = document.getElementById('fsKeyStatus');
 
     if (settingsKeyInput && fsKey) settingsKeyInput.value = fsKey;
+
+    if (settingsKeyInput) {
+      settingsKeyInput.onkeydown = function(e) { if (e.key === 'Enter' && settingsSaveBtn) settingsSaveBtn.click(); };
+    }
 
     if (settingsSaveBtn) {
       settingsSaveBtn.onclick = function() {

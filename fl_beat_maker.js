@@ -38,10 +38,48 @@ const FL = {
 
   // melodyNotes[patternId][trackId] = [{pitch: MIDI, step: 0-15, length: 1+, velocity: 0-100}]
   melodyNotes: {},
+
+  // ---- Advanced Piano Roll Features ----
+  prTool: 'draw',       // 'draw' | 'select' | 'delete'
+  prScale: null,        // null = off, or scale name from SCALES
+  prRoot: 0,            // 0 = C, 1 = C#, etc.
+  prZoom: 1,            // 0.5, 0.75, 1, 1.5, 2
+  prSnap: 1,            // 1 = 16th note, 2 = 8th note, 4 = quarter
+  prGhost: true,        // show ghost notes from other tracks
+  prShowVelocity: true, // show velocity lane
+  prSelectedNotes: [],   // [{pitch, step}] for multi-select
+  prStepLen: 32,        // total steps in piano roll grid (adjustable)
+  
+  // ---- Undo/Redo ----
+  prUndoStack: [],     // array of {patternId, notes} snapshots
+  prRedoStack: [],     // array of {patternId, notes} snapshots
+  prMaxUndo: 50,       // max undo steps
 };
 
 // ---- Piano Roll - Note name helpers ----
 const FL_NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+// Scale definitions (intervals from root)
+const FL_SCALES = {
+  major:       [0, 2, 4, 5, 7, 9, 11],
+  minor:       [0, 2, 3, 5, 7, 8, 10],
+  pentatonic:  [0, 2, 4, 7, 9],
+  blues:       [0, 3, 5, 6, 7, 10],
+  chromatic:   [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+  dorian:      [0, 2, 3, 5, 7, 9, 10],
+  phrygian:    [0, 1, 3, 5, 7, 8, 10],
+  lydian:      [0, 2, 4, 6, 7, 9, 11],
+  mixolydian:  [0, 2, 4, 5, 7, 9, 10],
+  locrian:     [0, 1, 3, 5, 6, 8, 10],
+  wholeTone:   [0, 2, 4, 6, 8, 10],
+  diminished:  [0, 2, 3, 5, 6, 8, 9, 11],
+};
+
+function flIsInScale(pitch, root, intervals) {
+  if (!intervals) return true;
+  const semitone = ((pitch % 12) - root + 12) % 12;
+  return intervals.indexOf(semitone) >= 0;
+}
 
 function flMidiToName(pitch) {
   const oct = Math.floor(pitch / 12) - 1;
@@ -1260,12 +1298,13 @@ function renderFLChannelRack() {
 }
 
 function updateFLStepUI(step) {
-  // Remove current class from all drum cells
-  document.querySelectorAll('.fl-step-current').forEach(el => el.classList.remove('fl-step-current'));
-  // Add to current step column
+  const cls = 'fl-step-current';
+  document.querySelectorAll(`.${cls}`).forEach(el => el.classList.remove(cls));
   if (step >= 0) {
-    document.querySelectorAll(`.fl-step-cell[data-step="${step}"]`).forEach(el => {
-      el.classList.add('fl-step-current');
+    document.querySelectorAll(`.fl-step-cell[data-step="${step}"]`).forEach(el => el.classList.add(cls));
+    document.querySelectorAll(`.fl-track-label-cell, .fl-track-pan-cell, .fl-track-vol-cell`).forEach(el => el.classList.add(cls));
+    document.querySelectorAll(`.fl-step-header-row th`).forEach((th, i) => {
+      if (i === step + 1) th.classList.add(cls);
     });
   }
 }
@@ -1301,6 +1340,51 @@ function updateFLPatternSelect() {
 }
 
 // ---- Piano Roll Renderer ----
+// ============================================================
+// COMPREHENSIVE PIANO ROLL
+// ============================================================
+
+function flPRGetScaleNotes() {
+  if (!FL.prScale || !FL_SCALES[FL.prScale]) return null;
+  return FL_SCALES[FL.prScale];
+}
+
+function flPRIsScaleNote(pitch) {
+  const intervals = flPRGetScaleNotes();
+  if (!intervals) return true;
+  return flIsInScale(pitch, FL.prRoot, intervals);
+}
+
+function flPRGetCellWidth() {
+  return Math.round(32 * FL.prZoom);
+}
+
+function flPRPlayPreview(pitch) {
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  const ctx = getFLAudioCtx();
+  if (!ctx) return;
+  // Resume AudioContext on user gesture (required by browser policy)
+  if (ctx.state === 'suspended') ctx.resume();
+  const stepDuration = (60 / FL.bpm) / 4;
+  playFLMelodyNote(track.id, pitch, ctx.currentTime, stepDuration * 2, 70);
+}
+
+// Get ghost notes from other melody tracks
+function flPRGetGhostNotes() {
+  if (!FL.prGhost) return [];
+  const allGhosts = [];
+  const currentNotes = getFLMelodyTrackNotes(FL.melodyTracks[FL.selectedMelodyTrack].id);
+  FL.melodyTracks.forEach((mt, mi) => {
+    if (mi === FL.selectedMelodyTrack) return;
+    const trackNotes = getFLMelodyTrackNotes(mt.id);
+    trackNotes.forEach(n => {
+      allGhosts.push({...n, color: mt.color});
+    });
+  });
+  return allGhosts;
+}
+
 function renderFLPianoRoll() {
   const container = document.getElementById('flPianoRoll');
   if (!container) return;
@@ -1309,56 +1393,152 @@ function renderFLPianoRoll() {
   if (!track) return;
   
   const notes = getFLMelodyTrackNotes(track.id);
+  const steps = FL.prStepLen;
   
-  // Build note map: step -> note for quick lookup
+  // Piano key area width (FL Studio style)
+  const keyWidth = 64;
+  
+  // Calculate responsive cell width based on available container space
+  const containerRect = container.parentElement?.getBoundingClientRect();
+  const availWidth = containerRect ? containerRect.width - (keyWidth + 16) : 600;
+  const idealCellW = Math.max(28, Math.min(80, Math.floor((availWidth - keyWidth) / steps)));
+  // Apply zoom factor
+  const cellW = Math.round(idealCellW * FL.prZoom);
+  
+  // Piano roll range: C2 (36) to C6 (84) = 4 octaves
+  const minPitch = 36;
+  const maxPitch = 84;
+  const numKeys = maxPitch - minPitch + 1;
+  
+  // Row heights: white keys 28px, black keys 18px (compact like real piano)
+  const rowHeights = [];
+  for (let p = maxPitch; p >= minPitch; p--) {
+    const isBlackPitch = [1, 3, 6, 8, 10].includes(p % 12);
+    rowHeights.push(isBlackPitch ? '18px' : '28px');
+  }
+  const rowTemplate = rowHeights.join(' ');
+  
+  // Build note map
   const noteMap = {};
   notes.forEach(n => {
-    for (let s = n.step; s < n.step + n.length && s < FL.stepLen; s++) {
+    for (let s = n.step; s < n.step + n.length && s < steps; s++) {
       if (!noteMap[s]) noteMap[s] = {};
       noteMap[s][n.pitch] = n;
     }
   });
   
-  // Piano roll range: C2 (36) to C5 (72) = 3 octaves
-  const minPitch = 36; // C2
-  const maxPitch = 72; // C5
-  const numKeys = maxPitch - minPitch + 1;
+  // Ghost notes
+  const ghostNotes = flPRGetGhostNotes();
+  const ghostMap = {};
+  ghostNotes.forEach(n => {
+    for (let s = n.step; s < n.step + n.length && s < steps; s++) {
+      if (!ghostMap[s]) ghostMap[s] = {};
+      if (!ghostMap[s][n.pitch] || ghostMap[s][n.pitch].length < n.length) {
+        ghostMap[s][n.pitch] = n;
+      }
+    }
+  });
   
-  let html = '<div class="fl-pr-wrapper">';
+  // ============ BUILD TOOLBAR (FL Studio Style) ============
+  let html = '<div class="fl-pr-toolbar">';
+  // Tools group
+  html += '<div class="fl-pr-tool-group" title="Tools">';
+  html += `<button class="fl-pr-tool-btn${FL.prTool === 'draw' ? ' active' : ''}" onclick="FL.prTool='draw';renderFLPianoRoll()" title="Draw (D) - Click to add/remove notes"><i class="fa-solid fa-pencil"></i></button>`;
+  html += `<button class="fl-pr-tool-btn${FL.prTool === 'select' ? ' active' : ''}" onclick="FL.prTool='select';renderFLPianoRoll()" title="Select (S) - Click notes to select, Delete to remove"><i class="fa-solid fa-arrow-pointer"></i></button>`;
+  html += `<button class="fl-pr-tool-btn${FL.prTool === 'delete' ? ' active' : ''}" onclick="FL.prTool='delete';renderFLPianoRoll()" title="Erase (E) - Click notes to delete"><i class="fa-solid fa-eraser"></i></button>`;
+  html += '</div>';
   
-  // Header row with step numbers
-  html += '<div class="fl-pr-header-row">';
-  html += '<div class="fl-pr-key-header"></div>';
-  for (let s = 0; s < FL.stepLen; s++) {
+  // Scale group
+  html += '<div class="fl-pr-tool-group" title="Scale highlighting">';
+  html += `<select class="fl-pr-select" onchange="FL.prScale=this.value||null;renderFLPianoRoll()">
+    <option value="">🎵 None</option>`;
+  for (const [name] of Object.entries(FL_SCALES)) {
+    const sel = FL.prScale === name ? ' selected' : '';
+    const label = name.charAt(0).toUpperCase() + name.slice(1);
+    html += `<option value="${name}"${sel}>${label}</option>`;
+  }
+  html += '</select>';
+  html += `<select class="fl-pr-select fl-pr-root-select${!FL.prScale ? ' fl-pr-disabled' : ''}" onchange="FL.prRoot=parseInt(this.value);renderFLPianoRoll()" ${!FL.prScale ? 'disabled' : ''}>
+    ${FL_NOTE_NAMES.map((n, i) => `<option value="${i}"${i===FL.prRoot?' selected':''}>${n}</option>`).join('')}
+  </select>`;
+  html += '</div>';
+  
+  // Snap & Quantize group
+  html += '<div class="fl-pr-tool-group" title="Grid & quantize">';
+  html += `<select class="fl-pr-select" onchange="FL.prSnap=parseInt(this.value);renderFLPianoRoll()">
+    <option value="1"${FL.prSnap===1?' selected':''}>1/16</option>
+    <option value="2"${FL.prSnap===2?' selected':''}>1/8</option>
+    <option value="4"${FL.prSnap===4?' selected':''}>1/4</option>
+  </select>`;
+  html += `<button class="fl-pr-tool-btn" onclick="flPRQuantize()" title="Quantize (Q) - Snap notes to grid"><i class="fa-solid fa-ruler-combined"></i> Q</button>`;
+  html += '</div>';
+  
+  // View group
+  html += '<div class="fl-pr-tool-group" title="View options">';
+  html += `<button class="fl-pr-tool-btn${FL.prGhost?' active':''}" onclick="FL.prGhost=!FL.prGhost;renderFLPianoRoll()" title="Ghost notes (G) - Show/hide notes from other tracks"><i class="fa-regular fa-eye"></i></button>`;
+  html += `<button class="fl-pr-tool-btn" onclick="FL.prZoom=Math.max(0.5,FL.prZoom-0.25);renderFLPianoRoll()" title="Zoom out"><i class="fa-solid fa-minus"></i> ${Math.round(FL.prZoom*100)}%</button>`;
+  html += `<button class="fl-pr-tool-btn" onclick="FL.prZoom=Math.min(3,FL.prZoom+0.25);renderFLPianoRoll()" title="Zoom in"><i class="fa-solid fa-plus"></i></button>`;
+  html += '</div>';
+  
+  // Bars group
+  html += '<div class="fl-pr-tool-group" title="Pattern length">';
+  html += `<button class="fl-pr-tool-btn" onclick="FL.prStepLen=Math.max(16,FL.prStepLen-16);if(FL.currStep>=FL.prStepLen)FL.currStep=0;renderFLPianoRoll()" title="Remove 1 bar (-16 steps)"><i class="fa-solid fa-minus"></i></button>`;
+  html += `<span style="font-size:10px;color:#888;min-width:28px;text-align:center;">${steps/16}b</span>`;
+  html += `<button class="fl-pr-tool-btn" onclick="FL.prStepLen=Math.min(128,FL.prStepLen+16);renderFLPianoRoll()" title="Add 1 bar (+16 steps)"><i class="fa-solid fa-plus"></i></button>`;
+  html += '</div>';
+  
+  // Actions group
+  html += '<div class="fl-pr-tool-group" title="Undo / Redo">';
+  const undoDisabled = FL.prUndoStack.length === 0 ? ' style="opacity:0.35;cursor:default"' : '';
+  const redoDisabled = FL.prRedoStack.length === 0 ? ' style="opacity:0.35;cursor:default"' : '';
+  html += `<button class="fl-pr-tool-btn" onclick="flPRUndo()" title="Undo (Ctrl+Z)"${undoDisabled}><i class="fa-solid fa-rotate-left"></i></button>`;
+  html += `<button class="fl-pr-tool-btn" onclick="flPRRedo()" title="Redo (Ctrl+Y)"${redoDisabled}><i class="fa-solid fa-rotate-right"></i></button>`;
+  html += '</div>';
+  html += '<div class="fl-pr-tool-group" title="Actions">';
+  html += `<button class="fl-pr-tool-btn" onclick="clearFLMelodyPattern()" title="Clear all notes in this pattern"><i class="fa-solid fa-trash-can"></i></button>`;
+  html += '</div>';
+  
+  html += '</div>';
+  
+  // ============ HEADER ROW ============
+  html += '<div class="fl-pr-wrapper">';
+  html += `<div class="fl-pr-header-row" style="padding-left:${keyWidth}px;">`;
+  html += `<div class="fl-pr-key-header" style="width:${keyWidth}px;"></div>`;
+  for (let s = 0; s < steps; s++) {
     const cls = s % 4 === 0 ? 'fl-pr-step-num fl-pr-beat-num' : 'fl-pr-step-num';
-    html += `<div class="${cls}">${s + 1}</div>`;
+    html += `<div class="${cls}" style="width:${cellW}px;min-width:${cellW}px;max-width:${cellW}px;">${s + 1}</div>`;
   }
   html += '</div>';
   
-  // Scrollable grid area
+  // ============ GRID AREA ============
   html += '<div class="fl-pr-scroll">';
-  html += '<div class="fl-pr-grid" style="grid-template-rows: repeat(' + numKeys + ', 1fr);">';
+  const gridCols = `${keyWidth}px repeat(${steps}, ${cellW}px)`;
+  html += `<div class="fl-pr-grid" style="grid-template-columns:${gridCols};grid-template-rows: ${rowTemplate};">`;
   
-  // Piano keys + grid cells
+  // Render each pitch row
   for (let p = maxPitch; p >= minPitch; p--) {
     const isBlack = [1, 3, 6, 8, 10].includes(p % 12);
     const isC = p % 12 === 0;
+    const isOctaveStart = p % 12 === 0; // C notes start a new octave
     const noteName = flMidiToName(p);
-    const pitchClass = p % 12;
+    const inScale = flPRIsScaleNote(p);
+    const octaveLabel = isC ? noteName : '';
     
-    // Piano key label
-    html += `<div class="fl-pr-key ${isBlack ? 'fl-pr-key-black' : 'fl-pr-key-white'} ${isC ? 'fl-pr-key-c' : ''}" 
-      data-pitch="${p}" title="${noteName}">
-      ${isC ? `<span class="fl-pr-key-label">${noteName}</span>` : ''}
+    // Piano key with scale highlighting
+    const scaleKeyCls = FL.prScale && !inScale ? ' fl-pr-key-dim' : '';
+    html += `<div class="fl-pr-key ${isBlack ? 'fl-pr-key-black' : 'fl-pr-key-white'} ${isC ? 'fl-pr-key-c' : ''}${scaleKeyCls}" 
+      data-pitch="${p}" title="${noteName}" onmousedown="event.stopPropagation();flPRPlayPreview(${p});">
+      ${!isBlack ? `<span class="fl-pr-key-label">${noteName}</span>` : ''}
+      ${FL.prScale && !inScale ? `<div class="fl-pr-key-dim-overlay"></div>` : ''}
     </div>`;
     
-    // Step grid cells for this pitch
-    for (let s = 0; s < FL.stepLen; s++) {
+    // Grid cells for this pitch
+    for (let s = 0; s < steps; s++) {
       const isBeat = s % 4 === 0;
       const existingNote = noteMap[s] && noteMap[s][p];
       const hasNote = !!existingNote;
       
-      // Check if this cell is the START of a note (for drawing note bars)
+      // Note bar properties
       let isNoteStart = false;
       let noteLen = 1;
       let noteVel = 80;
@@ -1368,28 +1548,57 @@ function renderFLPianoRoll() {
         noteVel = existingNote.velocity;
       }
       
-      const gridCls = isBlack ? 'fl-pr-cell-black' : 'fl-pr-cell-white';
+      // Ghost note check
+      const hasGhost = ghostMap[s] && ghostMap[s][p];
+      const ghostNote = hasGhost ? ghostMap[s][p] : null;
+      
+      // Scale highlight
+      const scaleCls = FL.prScale && !inScale ? ' fl-pr-cell-dim' : '';
+      // Snap indicator
+      const snapCls = s % FL.prSnap === 0 && FL.prSnap > 1 ? ' fl-pr-cell-snap' : '';
+      // Octave divider - first C row gets a yellow top-border line
+      const octaveCls = isOctaveStart ? ' fl-pr-row-octave-start' : '';
+      // Subtle alt row striping: alternate every 2 rows for easy visual tracking
+      const rowAlt = p % 2 === 0 ? ' fl-pr-row-alt' : '';
+      
+      // Black key cells get compact class for variable sizing
+      const gridCls = isBlack ? 'fl-pr-cell-black fl-pr-cell-compact' : 'fl-pr-cell-white';
       const beatCls = isBeat ? 'fl-pr-cell-beat' : '';
-      const noteCls = hasNote ? 'fl-pr-cell-note' : '';
       const isCurr = s === FL.currStep && FL.isPlaying;
       const currCls = isCurr ? 'fl-pr-cell-current' : '';
       
-      html += `<div class="fl-pr-cell ${gridCls} ${beatCls} ${noteCls} ${currCls}" 
+      html += `<div class="fl-pr-cell ${gridCls} ${beatCls} ${currCls}${scaleCls}${snapCls}${octaveCls}${rowAlt}" 
         data-pitch="${p}" data-step="${s}"
         onmousedown="flPRMouseDown(event, ${p}, ${s})"
         onmouseenter="flPRMouseEnter(event, ${p}, ${s})"
-        title="${noteName} · Step ${s+1}">`;        // Render note bar if this is the start of a note
+        title="${noteName} · Step ${s+1}">`;
+      
+      // Ghost note bar (rendered first so it's behind)
+      if (ghostNote && ghostNote.step === s) {
+        const ghostW = Math.max(100, ghostNote.length * 100);
+        const ghostColor = ghostNote.color || '#555';
+        html += `<div class="fl-pr-ghost-bar" style="width:${ghostW}%;background:${ghostColor};"></div>`;
+      }
+      
+      // Note bar - bright and saturated
       if (isNoteStart) {
-        const widthPct = Math.max(100, noteLen * 100); // span noteLen cells
-        const opacity = 0.5 + (noteVel / 100) * 0.5;
-        html += `<div class="fl-pr-note-bar" style="
+        const widthPct = Math.max(100, noteLen * 100);
+        // Brighter baseline, more velocity impact
+        const opacity = 0.65 + (noteVel / 100) * 0.35;
+        const selected = FL.prSelectedNotes.some(n => n.pitch === p && n.step === s);
+        // Add subtle brightness boost based on velocity
+        const brightBoost = Math.round(30 + (noteVel / 100) * 40);
+        const labelToShow = noteLen >= 2 ? noteName : '';
+        html += `<div class="fl-pr-note-bar${selected ? ' fl-pr-note-selected' : ''}" style="
           width: ${widthPct}%;
           background: ${track.color};
           opacity: ${opacity};
+          filter: brightness(${1 + (noteVel / 100) * 0.4});
           --note-vel: ${noteVel};
           --note-len: ${noteLen};
         " ondblclick="event.stopPropagation(); flPRRemoveNote(${p}, ${s})">
-          <span class="fl-pr-note-label">${noteName}</span>
+          ${labelToShow ? `<span class="fl-pr-note-label">${noteName}</span>` : `<span class="fl-pr-note-label" style="opacity:0.5;font-size:7px;">${noteName}</span>`}
+          <div class="fl-pr-note-resize-handle" data-pitch="${p}" data-step="${s}" title="Drag to resize"></div>
         </div>`;
       }
       
@@ -1399,39 +1608,192 @@ function renderFLPianoRoll() {
   
   html += '</div></div></div>';
   
+  // ============ VELOCITY LANE ============
+  if (FL.prShowVelocity) {
+    html += '<div class="fl-pr-velocity-container">';
+    html += '<div class="fl-pr-velocity-header">Vel</div>';
+    html += '<div class="fl-pr-velocity-lane" style="grid-template-columns: repeat(' + steps + ', ' + cellW + 'px);">';
+    
+    const velMap = {};
+    notes.forEach(n => {
+      if (!velMap[n.step] || velMap[n.step] < n.velocity) {
+        velMap[n.step] = n.velocity;
+      }
+    });
+    
+    for (let s = 0; s < steps; s++) {
+      const vel = velMap[s] || 0;
+      const isBeat = s % 4 === 0;
+      html += `<div class="fl-pr-vel-cell${isBeat ? ' fl-pr-cell-beat' : ''}" data-step="${s}" onmousedown="flPRVelMouseDown(event, ${s})">`;
+      if (vel > 0) {
+        html += `<div class="fl-pr-vel-bar" style="height:${vel}%;background:${track.color};"></div>`;
+      }
+      html += '</div>';
+    }
+    
+    html += '</div></div>';
+  }
+  
+  // Save scroll position before re-render
+  const scrollEl = container.querySelector('.fl-pr-scroll');
+  const oldScrollTop = scrollEl ? scrollEl.scrollTop : 0;
+  const oldScrollLeft = scrollEl ? scrollEl.scrollLeft : 0;
+  
   container.innerHTML = html;
   
-  // Update current step highlight for piano roll
+  // Restore scroll position
+  const newScrollEl = container.querySelector('.fl-pr-scroll');
+  if (newScrollEl) {
+    newScrollEl.scrollTop = oldScrollTop;
+    newScrollEl.scrollLeft = oldScrollLeft;
+  }
+  
+  // Update current step highlight
   if (FL.isPlaying) {
     updateFLPRStepUI(FL.currStep);
   }
 }
 
-// ---- Piano Roll Interactions ----
+// ============================================================
+// Piano Roll Undo / Redo
+// ============================================================
+function flPRSaveSnapshot() {
+  const notes = getFLMelodyNotes();
+  FL.prUndoStack.push({
+    patternId: FL.currPattern,
+    notes: JSON.parse(JSON.stringify(notes))
+  });
+  if (FL.prUndoStack.length > FL.prMaxUndo) FL.prUndoStack.shift();
+  FL.prRedoStack = []; // new action invalidates redo
+}
+
+function flPRApplySnapshot(snapshot, statusMsg) {
+  if (!snapshot) return;
+  const current = getFLMelodyNotes();
+  if (snapshot.patternId !== FL.currPattern) {
+    updateFLStatusBar('⚠️ Snapshot is for a different pattern');
+    return;
+  }
+  // Clear current notes and restore snapshot
+  for (const trackId of Object.keys(current)) {
+    delete current[trackId];
+  }
+  for (const trackId of Object.keys(snapshot.notes)) {
+    current[trackId] = snapshot.notes[trackId];
+  }
+  FL.prSelectedNotes = [];
+  renderFLPianoRoll();
+  updateFLStatusBar(statusMsg);
+}
+
+function flPRUndo() {
+  if (FL.prUndoStack.length === 0) {
+    updateFLStatusBar('↩ Nothing to undo');
+    return;
+  }
+  const current = getFLMelodyNotes();
+  FL.prRedoStack.push({
+    patternId: FL.currPattern,
+    notes: JSON.parse(JSON.stringify(current))
+  });
+  const snapshot = FL.prUndoStack.pop();
+  flPRApplySnapshot(snapshot, '↩ Undo');
+}
+
+function flPRRedo() {
+  if (FL.prRedoStack.length === 0) {
+    updateFLStatusBar('↪ Nothing to redo');
+    return;
+  }
+  const current = getFLMelodyNotes();
+  FL.prUndoStack.push({
+    patternId: FL.currPattern,
+    notes: JSON.parse(JSON.stringify(current))
+  });
+  const snapshot = FL.prRedoStack.pop();
+  flPRApplySnapshot(snapshot, '↪ Redo');
+}
+
+// ============================================================
+// Piano Roll Interactions
+// ============================================================
 let _prDrawActive = false;
+let _prUndoSaved = false; // prevents drag-painting from flooding undo stack
+let _prResizeActive = false;
+let _prResizePitch = null;
+let _prResizeStep = null;
+let _prResizeStartX = 0;
+let _prResizeStartLen = 1;
+let _prDragStartPitch = null;
+let _prDragStartStep = null;
 
 function flPRMouseDown(e, pitch, step) {
   const track = FL.melodyTracks[FL.selectedMelodyTrack];
   if (!track) return;
   const notes = getFLMelodyTrackNotes(track.id);
   
-  // Check if clicking on existing note
+  // Check if clicking on a resize handle
+  const handle = e.target.closest('.fl-pr-note-resize-handle');
+  if (handle && e.button === 0) {
+    const note = notes.find(n => n.pitch === pitch && n.step === step);
+    if (note) {
+      flPRSaveSnapshot();
+      _prResizeActive = true;
+      _prResizePitch = pitch;
+      _prResizeStep = step;
+      _prResizeStartX = e.clientX;
+      _prResizeStartLen = note.length;
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+  }
+  
   const existingIdx = notes.findIndex(n => n.pitch === pitch && n.step === step);
   
   if (e.button === 0) {
+    if (FL.prTool === 'delete') {
+      // Delete tool: always remove note
+      if (existingIdx >= 0) {
+        flPRSaveSnapshot();
+        notes.splice(existingIdx, 1);
+        renderFLPianoRoll();
+      }
+      return;
+    }
+    
+    if (FL.prTool === 'select') {
+      // Select tool: toggle selection
+      if (existingIdx >= 0) {
+        const selIdx = FL.prSelectedNotes.findIndex(n => n.pitch === pitch && n.step === step);
+        if (selIdx >= 0) {
+          FL.prSelectedNotes.splice(selIdx, 1);
+        } else {
+          FL.prSelectedNotes.push({ pitch, step });
+        }
+        renderFLPianoRoll();
+        return;
+      }
+      // Click empty cell to clear selection
+      FL.prSelectedNotes = [];
+      renderFLPianoRoll();
+      return;
+    }
+    
+    // DRAW TOOL (default)
     _prDrawActive = true;
+    _prUndoSaved = true;
+    flPRSaveSnapshot();
     if (existingIdx >= 0) {
       // Remove note on click
       notes.splice(existingIdx, 1);
     } else {
-      // Add note
-      // Remove any overlapping notes at this pitch
+      // Remove overlapping notes at this pitch
       const overlapIdx = notes.findIndex(n => n.pitch === pitch && step >= n.step && step < n.step + n.length);
       if (overlapIdx >= 0) {
         notes.splice(overlapIdx, 1);
       }
       notes.push({ pitch, step, length: 1, velocity: 80 });
-      // Sort notes by step
       notes.sort((a, b) => a.step - b.step);
       // Play preview
       const stepDuration = (60 / FL.bpm) / 4;
@@ -1443,8 +1805,7 @@ function flPRMouseDown(e, pitch, step) {
 }
 
 function flPRMouseEnter(e, pitch, step) {
-  if (e.buttons === 1 && _prDrawActive) {
-    // Paint notes while holding
+  if (e.buttons === 1 && _prDrawActive && FL.prTool === 'draw') {
     flPRPaintNote(pitch, step);
   }
 }
@@ -1456,6 +1817,16 @@ function flPRPaintNote(pitch, step) {
   
   const existing = notes.find(n => n.pitch === pitch && n.step === step);
   if (!existing) {
+    // Only save one snapshot per drag gesture to avoid flooding undo stack
+    if (!_prUndoSaved) {
+      flPRSaveSnapshot();
+      _prUndoSaved = true;
+    }
+    // Remove overlapping notes at this pitch
+    const overlapIdx = notes.findIndex(n => n.pitch === pitch && step >= n.step && step < n.step + n.length);
+    if (overlapIdx >= 0) {
+      notes.splice(overlapIdx, 1);
+    }
     notes.push({ pitch, step, length: 1, velocity: 80 });
     notes.sort((a, b) => a.step - b.step);
     renderFLPianoRoll();
@@ -1468,21 +1839,254 @@ function flPRRemoveNote(pitch, step) {
   const notes = getFLMelodyTrackNotes(track.id);
   const idx = notes.findIndex(n => n.pitch === pitch && n.step === step);
   if (idx >= 0) {
+    flPRSaveSnapshot();
     notes.splice(idx, 1);
     renderFLPianoRoll();
   }
 }
 
-// Clear all melody paints on mouse up anywhere
-document.addEventListener('mouseup', () => {
-  _prDrawActive = false;
+// Velocity editing
+function flPRVelMouseDown(e, step) {
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  const notes = getFLMelodyTrackNotes(track.id);
+  
+  // Find notes at this step
+  const stepNotes = notes.filter(n => n.step === step);
+  if (stepNotes.length === 0) return;
+  
+  const cell = e.currentTarget;
+  const rect = cell.getBoundingClientRect();
+  const y = e.clientY - rect.top;
+  const pct = Math.max(5, Math.min(100, 100 - (y / rect.height) * 100));
+  
+  flPRSaveSnapshot();
+  stepNotes.forEach(n => { n.velocity = Math.round(pct); });
+  renderFLPianoRoll();
+  
+  // Drag to adjust multiple
+  _prDragStartStep = step;
+}
+
+// Add document listener for velocity drag
+function flPRVelMouseMove(e) {
+  if (_prDragStartStep === null) return;
+  const cell = document.querySelector(`.fl-pr-vel-cell[data-step="${_prDragStartStep}"]`);
+  if (!cell) return;
+  const rect = cell.getBoundingClientRect();
+  const y = e.clientY - rect.top;
+  const pct = Math.max(5, Math.min(100, 100 - (y / rect.height) * 100));
+  
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  const notes = getFLMelodyTrackNotes(track.id);
+  const stepNotes = notes.filter(n => n.step === _prDragStartStep);
+  stepNotes.forEach(n => { n.velocity = Math.round(pct); });
+  renderFLPianoRoll();
+}
+
+function flPRVelMouseUp(e) {
+  _prDragStartStep = null;
+}
+
+// Quantize
+function flPRQuantize() {
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  const notes = getFLMelodyTrackNotes(track.id);
+  const snap = FL.prSnap;
+  
+  flPRSaveSnapshot();
+  notes.forEach(n => {
+    // Snap step to nearest snap division
+    n.step = Math.round(n.step / snap) * snap;
+    if (n.step >= FL.prStepLen) n.step = FL.prStepLen - snap;
+    // Snap length to snap division
+    n.length = Math.max(1, Math.round(n.length / snap) * snap);
+    if (n.step + n.length > FL.prStepLen) n.length = FL.prStepLen - n.step;
+  });
+  
+  // Remove duplicates
+  const filtered = [];
+  for (let i = 0; i < notes.length; i++) {
+    const dup = filtered.find(n => n.pitch === notes[i].pitch && n.step === notes[i].step);
+    if (!dup) filtered.push(notes[i]);
+  }
+  notes.length = 0;
+  filtered.forEach(n => notes.push(n));
+  notes.sort((a, b) => a.step - b.step);
+  
+  renderFLPianoRoll();
+  updateFLStatusBar('🎯 Quantized to ' + snap + '/16 grid');
+}
+
+// ---- Resize handlers ----
+document.addEventListener('mousemove', function(e) {
+  if (_prResizeActive) {
+    const track = FL.melodyTracks[FL.selectedMelodyTrack];
+    if (!track) return;
+    const notes = getFLMelodyTrackNotes(track.id);
+    const note = notes.find(n => n.pitch === _prResizePitch && n.step === _prResizeStep);
+    if (!note) return;
+    
+    const gridEl = document.querySelector('#flPianoRoll .fl-pr-grid');
+    if (!gridEl) return;
+    const gridRect = gridEl.getBoundingClientRect();
+    const cellWidth = (gridRect.width - 56) / FL.stepLen;
+    if (cellWidth <= 0) return;
+    
+    const dx = e.clientX - _prResizeStartX;
+    const stepsToAdd = Math.round(dx / cellWidth);
+    const newLen = Math.max(1, Math.min(FL.prStepLen - _prResizeStep, _prResizeStartLen + stepsToAdd));
+    
+    if (newLen !== note.length) {
+      note.length = newLen;
+      const filtered = [];
+      for (var i = 0; i < notes.length; i++) {
+        var n = notes[i];
+        if (n.pitch === _prResizePitch && n.step !== _prResizeStep &&
+            n.step >= _prResizeStep && n.step < _prResizeStep + newLen) {
+          continue;
+        }
+        filtered.push(n);
+      }
+      notes.length = 0;
+      for (var j = 0; j < filtered.length; j++) {
+        notes.push(filtered[j]);
+      }
+      renderFLPianoRoll();
+      updateFLStatusBar(`📐 Length ${newLen}`);
+    }
+  }
+  
+  // Velocity drag
+  flPRVelMouseMove(e);
 });
+
+document.addEventListener('mouseup', function(e) {
+  if (_prResizeActive) {
+    _prResizeActive = false;
+    _prResizePitch = null;
+    _prResizeStep = null;
+    _prResizeStartX = 0;
+    _prResizeStartLen = 1;
+  }
+  _prDrawActive = false;
+  _prUndoSaved = false;
+  flPRVelMouseUp(e);
+});
+
+// Keyboard shortcuts for piano roll
+function flPRInitShortcuts() {
+  document.addEventListener('keydown', function(e) {
+    // Only when piano roll is visible
+    if (FL.viewMode !== 'piano-roll') return;
+    if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+    
+    const track = FL.melodyTracks[FL.selectedMelodyTrack];
+    if (!track) return;
+    const notes = getFLMelodyTrackNotes(track.id);
+    
+    switch (e.key) {
+      case 'd':
+      case 'D':
+        FL.prTool = 'draw';
+        renderFLPianoRoll();
+        e.preventDefault();
+        break;
+      case 's':
+      case 'S':
+        FL.prTool = 'select';
+        renderFLPianoRoll();
+        e.preventDefault();
+        break;
+      case 'e':
+      case 'E':
+        FL.prTool = 'delete';
+        renderFLPianoRoll();
+        e.preventDefault();
+        break;
+      case 'q':
+      case 'Q':
+        flPRQuantize();
+        e.preventDefault();
+        break;
+      case 'g':
+      case 'G':
+        FL.prGhost = !FL.prGhost;
+        renderFLPianoRoll();
+        e.preventDefault();
+        break;
+      case 'z':
+      case 'Z':
+        if (e.ctrlKey || e.metaKey) {
+          if (e.shiftKey) {
+            flPRRedo();
+          } else {
+            flPRUndo();
+          }
+          e.preventDefault();
+        }
+        break;
+      case 'y':
+      case 'Y':
+        if (e.ctrlKey || e.metaKey) {
+          flPRRedo();
+          e.preventDefault();
+        }
+        break;
+      case 'Delete':
+      case 'Backspace':
+        if (FL.prSelectedNotes.length > 0) {
+          flPRSaveSnapshot();
+          FL.prSelectedNotes.forEach(n => {
+            const idx = notes.findIndex(no => no.pitch === n.pitch && no.step === n.step);
+            if (idx >= 0) notes.splice(idx, 1);
+          });
+          FL.prSelectedNotes = [];
+          renderFLPianoRoll();
+          e.preventDefault();
+        }
+        break;
+    }
+  });
+}
+
+// Auto-init shortcuts
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', flPRInitShortcuts);
+} else {
+  flPRInitShortcuts();
+}
+
+// Responsive re-render on window resize (debounced)
+let _prResizeTimer = null;
+window.addEventListener('resize', function() {
+  if (FL.viewMode === 'piano-roll') {
+    clearTimeout(_prResizeTimer);
+    _prResizeTimer = setTimeout(function() {
+      renderFLPianoRoll();
+    }, 150);
+  }
+});
+
+// Also re-render when the piano roll container becomes visible
+// (e.g. switching from drums to piano roll)
+const _origUpdateFLPianoTrackSelect = updateFLPianoTrackSelect;
+updateFLPianoTrackSelect = function() {
+  _origUpdateFLPianoTrackSelect();
+  if (FL.viewMode === 'piano-roll') {
+    renderFLPianoRoll();
+  }
+};
 
 function clearFLMelodyPattern() {
   const notes = getFLMelodyNotes();
+  flPRSaveSnapshot();
   FL.melodyTracks.forEach(t => {
     notes[t.id] = [];
   });
+  FL.prSelectedNotes = [];
   renderFLPianoRoll();
   updateFLStatusBar('🗑 Melody cleared');
 }
@@ -1859,10 +2463,22 @@ function loadFLPreset(name) {
 }
 
 function clearFLPattern() {
+  if (FL.isPlaying) stopFLBeat();
+  if (!confirm('Clear all beats in this pattern?')) return;
   const pattern = getFLPatternData();
   pattern.forEach(t => t.steps = new Array(FL.stepLen).fill(0));
+  // Also clear melody notes for this pattern
+  const pid = FL.currPattern;
+  if (FL.melodyNotes[pid]) {
+    FL.melodyTracks.forEach(mt => {
+      FL.melodyNotes[pid][mt.id] = [];
+    });
+  }
   renderFLChannelRack();
-  updateFLStatusBar('🗑 Cleared');
+  if (FL.viewMode === 'piano-roll') {
+    renderFLPianoRoll();
+  }
+  updateFLStatusBar('🗑 Pattern cleared');
 }
 
 function randomizeFLPattern() {
@@ -2075,6 +2691,34 @@ function setupFLStudio() {
     updateFLStatusBar();
   });
   
+  // Bars control
+  function updateBarsUI() {
+    const display = document.getElementById('flBarsDisplay');
+    if (display) display.textContent = FL.stepLen / 16;
+  }
+  function changeBars(delta) {
+    const newLen = FL.stepLen + delta * 16;
+    if (newLen < 16 || newLen > 64) return;
+    FL.stepLen = newLen;
+    Object.keys(FL.patterns).forEach(pid => {
+      FL.patterns[pid].forEach(t => {
+        if (t.steps.length !== newLen) {
+          const newSteps = new Array(newLen).fill(0);
+          for (let i = 0; i < Math.min(t.steps.length, newLen); i++) newSteps[i] = t.steps[i];
+          t.steps = newSteps;
+        }
+      });
+    });
+    if (FL.currStep >= FL.stepLen) FL.currStep = 0;
+    updateBarsUI();
+    renderFLChannelRack();
+    if (FL.isPlaying) { stopFLBeat(); startFLBeat(); }
+    updateFLStatusBar(`📏 ${newLen/16} bars (${newLen} steps)`);
+  }
+  document.getElementById('flBarsDown')?.addEventListener('click', () => changeBars(-1));
+  document.getElementById('flBarsUp')?.addEventListener('click', () => changeBars(1));
+  updateBarsUI();
+  
 // Swing - per-pattern
 const swingSlider = document.getElementById('flSwing');
 const swingVal = document.getElementById('flSwingVal');
@@ -2155,6 +2799,15 @@ if (swingSlider && swingVal) {
   document.getElementById('flClearBtn')?.addEventListener('click', clearFLPattern);
   document.getElementById('flRandomBtn')?.addEventListener('click', randomizeFLPattern);
   
+  // Keyboard shortcut: Delete/Backspace to clear current pattern
+  document.addEventListener('keydown', (e) => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') &&
+        !e.target.matches('input, textarea, select, [contenteditable]')) {
+      e.preventDefault();
+      clearFLPattern();
+    }
+  });
+  
   // Export
   document.getElementById('flExportBtn')?.addEventListener('click', exportFLBeat);
   
@@ -2165,6 +2818,17 @@ if (swingSlider && swingVal) {
     masterVol.addEventListener('input', () => {
       FL.masterVol = parseInt(masterVol.value);
       masterVal.textContent = FL.masterVol;
+    });
+  }
+  
+  // Toggle mixer collapse
+  const mixerToggle = document.getElementById('flMixerToggle');
+  const mixerContainer = document.getElementById('flMixerContainer');
+  if (mixerToggle && mixerContainer) {
+    mixerToggle.addEventListener('click', () => {
+      mixerContainer.classList.toggle('fl-mixer-collapsed');
+      const icon = document.getElementById('flMixerToggleIcon');
+      if (icon) icon.textContent = mixerContainer.classList.contains('fl-mixer-collapsed') ? '▼' : '▲';
     });
   }
   
