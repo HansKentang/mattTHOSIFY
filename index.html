@@ -720,101 +720,167 @@
       <section class="page" id="page-ai-music">
         <!-- Tabs: Beat Maker / AI Music Gen -->
         <div class="studio-tabs">
-          <button class="studio-tab active" data-studio-tab="beat-maker"><i class="fa-solid fa-drum"></i> Beat Maker</button>
+          <button class="studio-tab active" data-studio-tab="fl-studio"><i class="fa-solid fa-sliders"></i> Beat Studio</button>
           <button class="studio-tab" data-studio-tab="ai-gen"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Music</button>
         </div>
 
-        <!-- ====== BEAT MAKER TAB ====== -->
-        <div class="studio-tab-content active" id="studio-beat-maker">
-          <div class="beat-studio-header">
-            <div class="beat-studio-title">
-              <div class="beat-studio-icon">
-                <i class="fa-solid fa-drum"></i>
-                <div class="beat-icon-pulse"></div>
-              </div>
-              <div>
-                <h2>Beat Studio</h2>
-                <p class="beat-studio-sub">Create your own beats — no AI needed, just pure sound</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Transport Controls -->
-          <div class="beat-transport">
-            <div class="transport-left">
-              <button class="transport-btn transport-play" id="beatPlayBtn" title="Play / Stop">
-                <i class="fa-solid fa-play"></i>
-              </button>
-              <button class="transport-btn" id="beatClearBtn" title="Clear Pattern">
-                <i class="fa-solid fa-eraser"></i>
-              </button>
-              <button class="transport-btn" id="beatRandomBtn" title="Randomize">
-                <i class="fa-solid fa-shuffle"></i>
-              </button>
-              <div class="transport-divider"></div>
-              <div class="transport-bpm">
-                <label>BPM</label>
-                <div class="bpm-control">
-                  <button class="bpm-btn" id="bpmDown">−</button>
-                  <input type="number" id="beatBpm" value="90" min="40" max="300">
-                  <button class="bpm-btn" id="bpmUp">+</button>
+        <!-- ====== BEAT STUDIO (Merged FL Studio + Beat Maker) ====== -->
+        <div class="studio-tab-content active" id="studio-fl-studio">
+          <!-- FL Studio Menu Bar -->
+          <div class="fl-menu">
+            <div class="fl-menu-left">
+              <div class="fl-bpm-group">
+                <label class="fl-label">BPM</label>
+                <div class="fl-bpm-control">
+                  <button class="fl-btn-tiny" id="flBpmDown">−</button>
+                  <div class="fl-bpm-display">
+                    <span id="flBpm">130</span>
+                    <span class="fl-unit">BPM</span>
+                  </div>
+                  <button class="fl-btn-tiny" id="flBpmUp">+</button>
                 </div>
-                <input type="range" id="beatBpmSlider" min="40" max="300" value="90" class="bpm-slider">
+                <input type="range" id="flBpmSlider" min="40" max="300" value="130" class="fl-slider" style="width:60px;">
               </div>
-              <div class="transport-divider"></div>
-              <div class="transport-swing">
-                <label>Swing</label>
-                <input type="range" id="beatSwing" min="0" max="100" value="0" class="bpm-slider" style="width:60px;">
-                <span id="beatSwingVal" style="font-size:11px;color:var(--text-secondary);min-width:24px;">0%</span>
+              <div class="fl-swing-group">
+                <label class="fl-label">Swing</label>
+                <input type="range" id="flSwing" min="0" max="100" value="0" class="fl-slider" style="width:40px;">
+                <span id="flSwingVal" class="fl-swing-val">0%</span>
               </div>
-            </div>
-            <div class="transport-right">
-              <div class="beat-pattern-select">
-                <label>Pattern</label>
-                <select id="beatPatternSelect">
-                  <option value="custom">🎨 Custom</option>
-                  <option value="four-on-floor">🪩 Four on the Floor</option>
-                  <option value="trap">🔥 Trap</option>
-                  <option value="hiphop">🎤 Hip Hop</option>
-                  <option value="lofi">☕ Lo-Fi</option>
-                  <option value="dnb">⚡ Drum & Bass</option>
-                  <option value="rock">🎸 Rock</option>
-                  <option value="house">🏠 House</option>
+              <div class="fl-divider"></div>
+              <div class="fl-ptn-group">
+                <label class="fl-label">Pattern</label>
+                <select id="flPatternSelect" class="fl-select"></select>
+                <button class="fl-btn-sm" id="flAddPattern" title="New Pattern"><i class="fa-solid fa-plus"></i></button>
+                <button class="fl-btn-sm" id="flDelPattern" title="Delete Pattern"><i class="fa-solid fa-minus"></i></button>
+              </div>
+              <div class="fl-divider"></div>
+              <div class="fl-preset-group">
+                <label class="fl-label">Preset</label>
+                <select id="flPresetSelect" class="fl-select">
+                  <option value="">Select preset...</option>
+                  <option value="four-on-floor">Four on the Floor</option>
+                  <option value="trap">Trap</option>
+                  <option value="hiphop">Hip Hop</option>
+                  <option value="lofi">Lo-Fi</option>
+                  <option value="dnb">Drum & Bass</option>
+                  <option value="rock">Rock</option>
+                  <option value="house">House</option>
                 </select>
               </div>
-              <button class="beat-export-btn" id="beatExportBtn">
+              <div class="fl-divider"></div>
+              <div class="fl-kit-group">
+                <label class="fl-label">Kit</label>
+                <select id="flKitSelect" class="fl-select">
+                  <option value="synthkit">🔊 Synth Kit</option>
+                  <option value="distkit">⚡ Dist Kit</option>
+                  <option value="sdbkit">🥁 SDB Kit</option>
+                  <option value="x0xproc1">🎛 808 Kit</option>
+                  <option value="x0xproc2">🎛 909 Kit</option>
+                </select>
+              </div>
+            </div>
+            <div class="fl-menu-right">
+              <button class="fl-btn-clear" id="flClearBtn" title="Clear Pattern"><i class="fa-solid fa-eraser"></i></button>
+              <button class="fl-btn-random" id="flRandomBtn" title="Randomize"><i class="fa-solid fa-shuffle"></i></button>
+            </div>
+          </div>
+
+          <!-- FL Studio Transport Bar -->
+          <div class="fl-transport">
+            <button class="fl-btn-play" id="flPlayBtn" title="Play / Stop">
+              <i class="fa-solid fa-play"></i>
+            </button>
+            <button class="fl-btn-stop" id="flStopBtn" title="Stop">
+              <i class="fa-solid fa-stop"></i>
+            </button>
+            <button class="fl-btn-rec" id="flRecBtn" title="Record">
+              <i class="fa-solid fa-circle"></i>
+            </button>
+            <div class="fl-mode-group">
+              <span class="fl-mode-badge">PAT</span>
+            </div>
+            <div class="fl-view-toggle">
+              <button class="fl-view-btn active" data-view="drums" title="Channel Rack">
+                <i class="fa-solid fa-drum"></i>
+                <span>Drums</span>
+              </button>
+              <button class="fl-view-btn" data-view="piano-roll" title="Piano Roll">
+                <i class="fa-solid fa-keyboard"></i>
+                <span>Melody</span>
+              </button>
+            </div>
+            <div class="fl-export-group">
+              <button class="fl-btn-export" id="flExportBtn" title="Export WAV">
                 <i class="fa-solid fa-download"></i>
-                <span>Export WAV</span>
+                <span>Export</span>
               </button>
             </div>
           </div>
 
-          <!-- Step Sequencer -->
-          <div class="beat-sequencer">
-            <div class="seq-header">
-              <div class="seq-label-col">Track</div>
-              <div class="seq-steps" id="seqStepNumbers"></div>
-            </div>
-            <div class="seq-tracks" id="seqTracks">
-              <!-- Tracks rendered by JS -->
+          <!-- FL Studio Views -->
+          <div id="flChannelRackView">
+            <!-- FL Studio Channel Rack -->
+            <div class="fl-channel-rack-wrapper">
+              <div class="fl-rack-header">
+                <span class="fl-rack-title"><i class="fa-solid fa-drum"></i> Channel Rack</span>
+                <span class="fl-rack-steps-label"><span class="fl-beat-group-1">1</span><span class="fl-beat-group">2</span><span class="fl-beat-group">3</span><span class="fl-beat-group-4">4</span></span>
+              </div>
+              <div class="fl-channel-rack" id="flChannelRack">
+                <!-- Rendered by JS -->
+              </div>
             </div>
           </div>
 
-          <!-- Track Volume / Mixer -->
-          <div class="beat-mixer" id="beatMixer">
-            <div class="mixer-header">
-              <span>Mixer</span>
-            </div>
-            <div class="mixer-channels" id="mixerChannels">
-              <!-- Channels rendered by JS -->
-            </div>
-            <div class="mixer-master">
-              <div class="mixer-channel master-channel">
-                <span class="mixer-label">Master</span>
-                <input type="range" id="beatMasterVol" min="0" max="100" value="75" class="mixer-slider" orient="vertical">
-                <span class="mixer-val" id="beatMasterVolVal">75</span>
+          <!-- FL Studio Piano Roll View -->
+          <div id="flPianoRollView" class="fl-hidden">
+            <div class="fl-pr-container">
+              <div class="fl-pr-header">
+                <div class="fl-pr-title">
+                  <i class="fa-solid fa-keyboard"></i>
+                  <span>Piano Roll</span>
+                </div>
+                <div class="fl-pr-controls">
+                  <label class="fl-label">Track</label>
+                  <select id="flMelodyTrackSelect" class="fl-select"></select>
+                  <button class="fl-btn-sm" id="flMelodyClearBtn" title="Clear Melody">
+                    <i class="fa-solid fa-eraser"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="fl-piano-roll" id="flPianoRoll">
+                <!-- Rendered by JS -->
+                <div class="fl-pr-empty">
+                  <i class="fa-solid fa-keyboard"></i>
+                  <p>Switch to Piano Roll view to add melody notes</p>
+                </div>
               </div>
             </div>
+          </div>
+
+          <!-- Unified Mixer with Per-Track Channels -->
+          <div class="fl-mixer-container">
+            <div class="fl-mixer-header">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Mixer</span>
+            </div>
+            <div class="fl-mixer-channels" id="flMixerChannels">
+              <!-- Per-track channel strips rendered by JS -->
+            </div>
+            <div class="fl-master-section">
+              <i class="fa-solid fa-volume-high"></i>
+              <span class="fl-label">Master</span>
+              <input type="range" id="flMasterVol" min="0" max="100" value="80" class="fl-master-slider">
+              <span class="fl-master-val" id="flMasterVolVal">80</span>
+              <button class="fl-btn-export" id="flFullExportBtn" title="Export Full Mix" onclick="exportFLBeat()" style="margin-left:8px;padding:3px 8px;">
+                <i class="fa-solid fa-file-audio"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- FL Studio Status Bar -->
+          <div class="fl-status-bar" id="flStatusBar">
+            <span class="fl-status-msg">🎛 FL Studio Ready</span>
+            <span class="fl-status-info">Pattern 1 · Step 1/16 · Beat 1.1 · 130 BPM</span>
           </div>
         </div>
 
@@ -1332,5 +1398,6 @@
 <script src="script.js"></script>
 <script src="features.js"></script>  <script src="ai_music_discover.js"></script>
   <script src="ai_music_generator.js"></script>
+  <script src="fl_beat_maker.js"></script>
 </body>
 </html>

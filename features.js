@@ -2316,6 +2316,9 @@ function exportBeat() {
 
 // ==================== Init Beat Maker ====================
 function initBeatMaker() {
+  // Beat Maker is now merged into Beat Studio (FL Studio tab).
+  // This function is disabled to avoid conflicts.
+  return;
   if (beatState._initialized) return;
   beatState._initialized = true;
   initSteps();
@@ -2349,6 +2352,20 @@ function initBeatMaker() {
   if (beatClearBtn) beatClearBtn.addEventListener('click', clearPattern);
   if (beatRandomBtn) beatRandomBtn.addEventListener('click', randomizePattern);
   if (beatExportBtn) beatExportBtn.addEventListener('click', exportBeat);
+  
+  // Record button
+  const beatRecBtn = document.getElementById('beatRecBtn');
+  if (beatRecBtn) {
+    beatRecBtn.addEventListener('click', () => {
+      beatRecBtn.classList.toggle('recording');
+      if (beatRecBtn.classList.contains('recording')) {
+        if (beatPlayBtn) beatPlayBtn.click();
+        showToast('🔴 Recording... pattern will play', 'fa-circle');
+      } else {
+        showToast('⏹ Recording stopped', 'fa-stop');
+      }
+    });
+  }
   
   if (beatBpmInput) {
     beatBpmInput.addEventListener('change', () => {
@@ -2423,12 +2440,12 @@ function initStudioTabs() {
     });
   }
   
-  // Show Beat Maker tab by default (user wants to make beats)
-  const aiTab = document.querySelector('[data-studio-tab="ai-generator"]');
-  const beatTab = document.querySelector('[data-studio-tab="beat-maker"]');
+  // Show Beat Studio tab by default
+  const aiTab = document.querySelector('[data-studio-tab="ai-gen"]');
+  const beatTab = document.querySelector('[data-studio-tab="fl-studio"]');
   if (beatTab) beatTab.classList.add('active');
   if (aiTab) aiTab.classList.remove('active');
-  enforceTabVisibility('studio-beat-maker');
+  enforceTabVisibility('studio-fl-studio');
   
   document.querySelectorAll('.studio-tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -2441,9 +2458,11 @@ function initStudioTabs() {
       // Force content visibility via inline styles
       enforceTabVisibility(targetId);
       
-      // Re-render sequencer when switching to beat maker tab
-      if (tab.dataset.studioTab === 'beat-maker') {
-        renderSequencer();
+      // Initialize FL Studio when switching to Beat Studio tab
+      if (tab.dataset.studioTab === 'fl-studio') {
+        if (typeof setupFLStudio === 'function') {
+          setupFLStudio();
+        }
       }
     });
   });
@@ -3050,7 +3069,10 @@ document.addEventListener('click', (e) => {
   if (link) {
     setTimeout(() => {
       initStudioTabs();
-      initBeatMaker();
+      // Initialize FL Studio when navigating to Beat Studio
+      if (typeof setupFLStudio === 'function') {
+        setupFLStudio();
+      }
     }, 100);
   }
 });
@@ -3059,7 +3081,9 @@ document.addEventListener('click', (e) => {
 if (document.getElementById('page-ai-music')?.classList.contains('active') || window.location.hash === '#ai-music') {
   setTimeout(() => {
     initStudioTabs();
-    initBeatMaker();
+    if (typeof setupFLStudio === 'function') {
+      setupFLStudio();
+    }
   }, 200);
 }
 
