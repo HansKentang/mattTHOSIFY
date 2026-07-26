@@ -54,6 +54,9 @@ function flMidiToFreq(pitch) {
 }
 
 // ---- Initialize ----
+// Per-pattern swing storage: patternId -> swing value (0-100)
+FL.patternSwings = { 1: 0 };
+
 function initFLPatterns() {
   // Update tracks from current kit first
   updateFLKitTracks(FL.currentKit);
@@ -67,6 +70,8 @@ function initFLPatterns() {
     solo: false
   }));
   FL.currPattern = 1;
+  if (!FL.patternSwings) FL.patternSwings = {};
+  if (FL.patternSwings[1] === undefined) FL.patternSwings[1] = 0;
   // Initialize melody notes for pattern 1
   initFLMelodyNotes(1);
 }
@@ -974,9 +979,10 @@ function startFLBeat() {
     
     FL.currStep = (FL.currStep + 1) % FL.stepLen;
     
-    // Calculate interval with swing
+    // Calculate interval with per-pattern swing
     const baseInterval = stepDuration * 1000;
-    const swingAmount = FL.swing / 100;
+    const patternSwing = FL.patternSwings && FL.patternSwings[FL.currPattern] !== undefined ? FL.patternSwings[FL.currPattern] : FL.swing;
+    const swingAmount = patternSwing / 100;
     let delay = baseInterval;
     if (FL.currStep % 2 === 0) {
       delay = baseInterval * (1 - swingAmount * 0.2);
@@ -1019,15 +1025,28 @@ function flStepMouseDown(tIdx, sIdx, e) {
   const track = FL.patterns[FL.currPattern][tIdx];
   if (!track) return;
   
-  // Left click: toggle step with velocity
+  // Left click: add/remove step at default velocity (FL Studio style)
   if (e.button === 0) {
     if (track.steps[sIdx] > 0) {
       track.steps[sIdx] = 0; // Remove
     } else {
-      track.steps[sIdx] = 80; // Default velocity
+      track.steps[sIdx] = 100; // Full velocity
     }
     renderFLChannelRack();
+    // Play preview
+    playFLSound(track.id, getFLAudioCtx()?.currentTime || 0, track.steps[sIdx] || 80, track.pan);
   }
+  // Right click: always remove step (FL Studio style)
+  if (e.button === 2) {
+    track.steps[sIdx] = 0;
+    renderFLChannelRack();
+  }
+}
+
+// Prevent context menu on step grid
+function flStepContextMenu(e) {
+  e.preventDefault();
+  return false;
 }
 
 function flStepMouseOver(tIdx, sIdx, e) {
@@ -1191,6 +1210,7 @@ function renderFLChannelRack() {
         data-track="${tIdx}" data-step="${s}"
         onmousedown="flStepMouseDown(${tIdx}, ${s}, event)"
         onmouseenter="flStepMouseOver(${tIdx}, ${s}, event)"
+        oncontextmenu="flStepContextMenu(event)"
         ondblclick="flStepDragStart(${tIdx}, ${s}, event)"
         title="Step ${s+1}: ${isActive ? val + '%' : 'Off'} (double-click to adjust velocity)"
         style="${isActive ? `background: ${bgColor}; box-shadow: inset 0 0 0 1px ${track.color}44;` : ''}">
@@ -2044,15 +2064,22 @@ function setupFLStudio() {
     updateFLStatusBar();
   });
   
-  // Swing
-  const swingSlider = document.getElementById('flSwing');
-  const swingVal = document.getElementById('flSwingVal');
-  if (swingSlider && swingVal) {
-    swingSlider.addEventListener('input', () => {
-      FL.swing = parseInt(swingSlider.value);
-      swingVal.textContent = FL.swing + '%';
-    });
-  }
+// Swing - per-pattern
+const swingSlider = document.getElementById('flSwing');
+const swingVal = document.getElementById('flSwingVal');
+if (swingSlider && swingVal) {
+  // Initialize from current pattern's swing
+  const initSwing = FL.patternSwings && FL.patternSwings[FL.currPattern] !== undefined ? FL.patternSwings[FL.currPattern] : 0;
+  swingSlider.value = initSwing;
+  swingVal.textContent = initSwing + '%';
+  
+  swingSlider.addEventListener('input', () => {
+    const val = parseInt(swingSlider.value);
+    FL.swing = val;
+    if (FL.patternSwings) FL.patternSwings[FL.currPattern] = val;
+    swingVal.textContent = val + '%';
+  });
+}
   
   // Pattern
   const patternSelect = document.getElementById('flPatternSelect');
