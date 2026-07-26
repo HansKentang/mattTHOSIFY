@@ -294,65 +294,94 @@ const FL_KITS = {
       crash:   'DRUMS/pearl-master-studio/samples/crash-02.wav',
     }
   },
-  // === LEGACY KITS (kept for backward compatibility) ===
-  'synthkit': {
-    label: '🔊 Synth Kit',
-    desc: 'Modern synthesized electronic drums',
+  // === FRESH KITS ===
+  'house': {
+    label: '🏠 House',
+    desc: 'Clean 4-on-the-floor · Punchy synth drums for house/EDM',
     baseUrl: FL_STARGATE_BASE,
     prefix: 'stargate-sample-pack/',
     map: {
-      kick:    'fugue-state-audio/drums/kicks/synthkit-kick.wav',
+      kick:    'fugue-state-audio/drums/kicks/x0xproc2-kick.wav',
       snare:   'fugue-state-audio/drums/snares/synthkit-snare.wav',
       hihat_c: 'fugue-state-audio/drums/hihats/synthkit-hatclsd.wav',
       hihat_o: 'fugue-state-audio/drums/hihats/synthkit-hatopen.wav',
       clap:    'fugue-state-audio/drums/claps/synthkit-clap.wav',
-      snare2:  'fugue-state-audio/drums/snares/x0xproc1-snare.wav',
+      crash:   'fugue-state-audio/drums/cymbals/synthkit-crash.wav',
+      ride:    'fugue-state-audio/drums/cymbals/synthkit-ride.wav',
       tom_h:   'fugue-state-audio/drums/toms/synthkit-hitom.wav',
       tom_m:   'fugue-state-audio/drums/toms/synthkit-midtom.wav',
       tom_l:   'fugue-state-audio/drums/toms/synthkit-lotom.wav',
-      crash:   'fugue-state-audio/drums/cymbals/synthkit-crash.wav',
-      ride:    'fugue-state-audio/drums/cymbals/synthkit-ride.wav',
     }
   },
-  'distkit': {
-    label: '⚡ Dist Kit',
-    desc: 'Aggressive distorted drums',
-    baseUrl: FL_STARGATE_BASE,
-    prefix: 'stargate-sample-pack/',
-    map: {
-      kick:    'fugue-state-audio/drums/kicks/distkit-kick.wav',
-      snare:   'fugue-state-audio/drums/snares/distkit-snare.wav',
-      hihat_c: 'fugue-state-audio/drums/hihats/distkit-hatclsd.wav',
-      hihat_o: 'fugue-state-audio/drums/hihats/distkit-hatopen.wav',
-      clap:    'fugue-state-audio/drums/claps/distkit-clap.wav',
-      snare2:  'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
-      tom_h:   'fugue-state-audio/drums/toms/distkit-hitom.wav',
-      tom_m:   'fugue-state-audio/drums/toms/distkit-midtom.wav',
-      tom_l:   'fugue-state-audio/drums/toms/distkit-lotom.wav',
-      crash:   'fugue-state-audio/drums/cymbals/distkit-crash.wav',
-      ride:    'fugue-state-audio/drums/cymbals/distkit-ride.wav',
-    }
-  },
-  'sdbkit': {
-    label: '🥁 Standard Kit',
-    desc: 'Standard acoustic-ish samples',
+  'latin': {
+    label: '💃 Latin',
+    desc: 'Salsa & tropical · Conga, bongo, shaker, maracas, cowbell',
     baseUrl: FL_STARGATE_BASE,
     prefix: 'stargate-sample-pack/',
     map: {
       kick:    'fugue-state-audio/drums/kicks/sdbkit-kick.wav',
-      snare:   'fugue-state-audio/drums/snares/sdbkit-snare.wav',
-      hihat_c: 'fugue-state-audio/drums/hihats/sdbkit-hatclsd.wav',
-      hihat_o: 'fugue-state-audio/drums/hihats/sdbkit-hatopen.wav',
-      clap:    'fugue-state-audio/drums/claps/sdbkit-clap.wav',
-      snare2:  'fugue-state-audio/drums/snares/distkit-snare.wav',
-      tom_h:   'fugue-state-audio/drums/toms/sdbkit-hitom.wav',
-      tom_m:   'fugue-state-audio/drums/toms/sdbkit-midtom.wav',
-      tom_l:   'fugue-state-audio/drums/toms/sdbkit-lotom.wav',
+      snare:   'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
+      hihat_c: 'fugue-state-audio/drums/hihats/x0xproc1-hatclsd.wav',
+      hihat_o: 'fugue-state-audio/drums/hihats/x0xproc1-hatopen.wav',
+    }
+  },
+  'funk': {
+    label: '🕺 Funk',
+    desc: 'Vintage LM-2 LinnDrum + CR-78 · Tight electro-funk groove',
+    baseUrl: FL_PEARL_BASE,
+    prefix: '',
+    map: {
+      kick:    'DM/LM-2/samples/kick.wav',
+      snare:   'DM/CR-78/samples/snare.wav',
+      hihat_c: 'DM/CR-78/samples/hihat.wav',
+      hihat_o: 'DM/CR-78/samples/hihat-accent.wav',
+      clap:    'DM/LM-2/samples/clap.wav',
+      snare2:  'DM/LM-2/samples/snare-l.wav',
+      tom_h:   'DM/LM-2/samples/tom-h.wav',
+      tom_m:   'DM/LM-2/samples/tom-m.wav',
+      tom_l:   'DM/LM-2/samples/tom-l.wav',
+      crash:   'DM/CR-78/samples/cymbal.wav',
+      ride:    'DM/LM-2/samples/ride.wav',
+    }
+  },
+  'reggae': {
+    label: '🌴 Reggae',
+    desc: 'Deep one-drop · Rimshot snare, open hi-hats, heavy bass',
+    baseUrl: FL_PEARL_BASE,
+    prefix: '',
+    map: {
+      kick:    'DRUMS/pearl-master-studio/samples/kick-01.wav',
+      snare:   'DRUMS/pearl-master-studio/samples/snare-02.wav',
+      hihat_c: 'DRUMS/pearl-master-studio/samples/hihat-closed.wav',
+      hihat_o: 'DRUMS/pearl-master-studio/samples/hihat-open.wav',
+      tom_h:   'DRUMS/pearl-master-studio/samples/tom-01.wav',
+      tom_m:   'DRUMS/pearl-master-studio/samples/tom-02.wav',
+      tom_l:   'DRUMS/pearl-master-studio/samples/tom-03.wav',
+      crash:   'DRUMS/pearl-master-studio/samples/crash-02.wav',
+      ride:    'DRUMS/pearl-master-studio/samples/ride-01.wav',
+    }
+  },
+  'metal': {
+    label: '🤘 Metal',
+    desc: 'Heavy Ludwig kick · Double crash attack · Aggressive',
+    baseUrl: FL_PEARL_BASE,
+    prefix: '',
+    map: {
+      kick:    'DRUMS/avl-drumkits-1.1/36-Ludwig26Kick-1.wav',
+      snare:   'DRUMS/pearl-master-studio/samples/snare-01.wav',
+      hihat_c: 'DRUMS/pearl-master-studio/samples/hihat-closed.wav',
+      hihat_o: 'DRUMS/pearl-master-studio/samples/hihat-open.wav',
+      snare2:  'DRUMS/pearl-master-studio/samples/snare-02.wav',
+      tom_h:   'DRUMS/pearl-master-studio/samples/tom-01.wav',
+      tom_m:   'DRUMS/pearl-master-studio/samples/tom-02.wav',
+      tom_l:   'DRUMS/pearl-master-studio/samples/tom-03.wav',
+      crash:   'DRUMS/pearl-master-studio/samples/crash-01.wav',
+      ride:    'DRUMS/pearl-master-studio/samples/ride-01.wav',
     }
   },
   'x0xproc1': {
     label: '🎛 808 Machine',
-    desc: 'Classic Roland 808 drum machine',
+    desc: 'Classic Roland 808 drum machine · Punchy & warm',
     baseUrl: FL_STARGATE_BASE,
     prefix: 'stargate-sample-pack/',
     map: {
@@ -369,24 +398,6 @@ const FL_KITS = {
       ride:    'fugue-state-audio/drums/cymbals/x0xproc1-ride.wav',
     }
   },
-  'x0xproc2': {
-    label: '🎛 909 Machine',
-    desc: 'Classic Roland 909 drum machine',
-    baseUrl: FL_STARGATE_BASE,
-    prefix: 'stargate-sample-pack/',
-    map: {
-      kick:    'fugue-state-audio/drums/kicks/x0xproc2-kick.wav',
-      snare:   'fugue-state-audio/drums/snares/x0xproc2-snare.wav',
-      hihat_c: 'fugue-state-audio/drums/hihats/x0xproc2-hatclsd.wav',
-      hihat_o: 'fugue-state-audio/drums/hihats/x0xproc2-hatopen.wav',
-      clap:    'fugue-state-audio/drums/claps/x0xproc2-clap.wav',
-      snare2:  'fugue-state-audio/drums/snares/distkit-snare.wav',
-      tom_h:   'fugue-state-audio/drums/toms/x0xproc2-hitom.wav',
-      tom_m:   'fugue-state-audio/drums/toms/x0xproc2-midtom.wav',
-      tom_l:   'fugue-state-audio/drums/toms/x0xproc2-lotom.wav',
-      crash:   'fugue-state-audio/drums/cymbals/x0xproc2-cymbal.wav',
-    }
-  }
 };
 
 // ---- Per-Kit Track Definitions ----
@@ -455,42 +466,67 @@ const FL_KIT_TRACKS = {
     { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 35, pan: 0 },
     { id: 'saxophone', label: 'Saxophone', short: 'Sx', color: '#FDCB6E', vol: 60, pan: 0, synth: true },
   ],
-  // === LEGACY KIT TRACKS ===
-  'synthkit': [
+  // === FRESH KIT TRACKS ===
+  'house': [
     { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
     { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
     { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
     { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
     { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
-    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
     { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 50, pan: 0 },
     { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 45, pan: 0 },
     { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 55, pan: 0 },
     { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 55, pan: 0 },
     { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 55, pan: 0 },
   ],
-  'distkit': [
+  'latin': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
+    { id: 'conga',   label: 'Conga',     short: 'Cn', color: '#E17055', vol: 60, pan: 0 },
+    { id: 'bongo',   label: 'Bongo',     short: 'Bg', color: '#D63031', vol: 55, pan: 0 },
+    { id: 'shaker',  label: 'Shaker',    short: 'Sh', color: '#00CEC9', vol: 50, pan: 0 },
+    { id: 'maracas', label: 'Maracas',   short: 'Mc', color: '#0984E3', vol: 50, pan: 0 },
+    { id: 'cowbell', label: 'Cowbell',   short: 'Cb', color: '#E17055', vol: 55, pan: 0 },
+    { id: 'tamb',    label: 'Tambourine',short: 'Tb', color: '#FDCB6E', vol: 50, pan: 0 },
+  ],
+  'funk': [
     { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
     { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
     { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
     { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
     { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
-    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
     { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 50, pan: 0 },
     { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 45, pan: 0 },
     { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 55, pan: 0 },
     { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 55, pan: 0 },
     { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 55, pan: 0 },
+    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
   ],
-  'sdbkit': [
-    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
-    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
-    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
+  'reggae': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 80, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 65, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 60, pan: 0 },
     { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
-    { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
-    { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 55, pan: 0 },
-    { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 55, pan: 0 },
-    { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 55, pan: 0 },
+    { id: 'rimshot', label: 'Rimshot',   short: 'Rm', color: '#E17055', vol: 60, pan: 0, synth: true },
+    { id: 'tamb',    label: 'Tambourine',short: 'Tb', color: '#FDCB6E', vol: 55, pan: 0 },
+    { id: 'shaker',  label: 'Shaker',    short: 'Sh', color: '#00CEC9', vol: 50, pan: 0 },
+    { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 40, pan: 0 },
+    { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 40, pan: 0 },
+    { id: 'bass808', label: '808 Bass',  short: 'B8', color: '#C44569', vol: 80, pan: 0, synth: true },
+  ],
+  'metal': [
+    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 90, pan: 0 },
+    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 80, pan: 0 },
+    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 70, pan: 0 },
+    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 60, pan: 0 },
+    { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 70, pan: 0 },
+    { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 60, pan: 0 },
+    { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 50, pan: 0 },
+    { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 60, pan: 0 },
+    { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 60, pan: 0 },
+    { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 60, pan: 0 },
   ],
   'x0xproc1': [
     { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
@@ -501,16 +537,6 @@ const FL_KIT_TRACKS = {
     { id: 'snare2',  label: 'Snare 2',   short: 'S2', color: '#F368E0', vol: 65, pan: 0 },
     { id: 'crash',   label: 'Crash',     short: 'Cr', color: '#F368E0', vol: 50, pan: 0 },
     { id: 'ride',    label: 'Ride',      short: 'Rd', color: '#C44569', vol: 45, pan: 0 },
-  ],
-  'x0xproc2': [
-    { id: 'kick',    label: 'Kick',      short: 'Kk', color: '#FF6B6B', vol: 85, pan: 0 },
-    { id: 'snare',   label: 'Snare',     short: 'Sn', color: '#FECA57', vol: 75, pan: 0 },
-    { id: 'hihat_c', label: 'Hi-Hat',    short: 'HH', color: '#48DBFB', vol: 65, pan: 0 },
-    { id: 'hihat_o', label: 'Open Hat',  short: 'HO', color: '#0ABDE3', vol: 55, pan: 0 },
-    { id: 'clap',    label: 'Clap',      short: 'Cp', color: '#FF9FF3', vol: 70, pan: 0 },
-    { id: 'tom_h',   label: 'Tom Hi',    short: 'TH', color: '#54A0FF', vol: 55, pan: 0 },
-    { id: 'tom_m',   label: 'Tom Mid',   short: 'TM', color: '#2E86DE', vol: 55, pan: 0 },
-    { id: 'tom_l',   label: 'Tom Lo',    short: 'TL', color: '#1B4F72', vol: 55, pan: 0 },
   ],
 };
 
