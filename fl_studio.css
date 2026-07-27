@@ -1123,10 +1123,7 @@
   background: rgba(30,215,96,0.2) !important;
 }
 
-/* Piano roll Freesound button - right section */
-#studio-fl-studio .fl-pr-freesound-section {
-  margin-left: auto;
-}
+
 
 /* ---- Master controls layout ---- */
 #studio-fl-studio .fl-master-section .fl-btn-export { margin-left: auto; }
