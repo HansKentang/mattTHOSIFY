@@ -1095,5 +1095,38 @@
   padding: 2px 4px;
 }
 
+/* Freesound sample button in piano roll toolbar */
+#studio-fl-studio .fl-pr-tool-btn.fl-pr-freesound-btn {
+  border-color: #555;
+  background: rgba(255,204,0,0.08);
+  color: #ffcc00;
+  padding: 2px 8px;
+}
+#studio-fl-studio .fl-pr-tool-btn.fl-pr-freesound-btn:hover {
+  background: rgba(255,204,0,0.2);
+  border-color: #ffcc00;
+}
+
+/* Sample loaded indicator */
+#studio-fl-studio .fl-pr-tool-btn.fl-pr-sample-loaded {
+  border-color: #1ed760 !important;
+  background: rgba(30,215,96,0.1) !important;
+  color: #1ed760 !important;
+  padding: 2px 8px;
+  font-size: 9px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#studio-fl-studio .fl-pr-tool-btn.fl-pr-sample-loaded:hover {
+  background: rgba(30,215,96,0.2) !important;
+}
+
+/* Piano roll Freesound button - right section */
+#studio-fl-studio .fl-pr-freesound-section {
+  margin-left: auto;
+}
+
 /* ---- Master controls layout ---- */
 #studio-fl-studio .fl-master-section .fl-btn-export { margin-left: auto; }

@@ -1474,6 +1474,16 @@ function renderFLPianoRoll() {
   html += `<div style="width:1px;height:16px;background:#333;margin:0 2px;"></div>`;
   html += `<button class="fl-pr-tool-btn" onclick="clearFLMelodyPattern();renderFLPianoRoll()" title="Clear all notes in this pattern"><i class="fa-solid fa-trash-can" style="color:#ff6b6b;"></i></button>`;
   html += `<button class="fl-pr-tool-btn${FL.prTool === 'delete' ? ' active' : ''}" onclick="FL.prTool='delete';renderFLPianoRoll()" title="Erase (E) - Click notes to delete"><i class="fa-solid fa-eraser"></i> Erase</button>`;
+  html += `<div style="width:1px;height:16px;background:#333;margin:0 2px;"></div>`;
+  
+  // Freesound sample button
+  if (FL.melodySamples && FL.melodySamples[track.id]) {
+    const sampleMeta = FL.melodySampleMeta && FL.melodySampleMeta[track.id];
+    const sampleName = sampleMeta ? sampleMeta.name.substring(0, 18) : 'Loaded';
+    html += `<button class="fl-pr-tool-btn fl-pr-sample-loaded" onclick="flClearMelodySample()" title="Clear sample: ${sampleName}"><i class="fa-solid fa-check-circle" style="color:#1ed760;"></i> ${sampleName}</button>`;
+  } else {
+    html += `<button class="fl-pr-tool-btn fl-pr-freesound-btn" onclick="flBrowseMelodySounds()" title="Browse Freesound.org for free samples for this track"><i class="fa-solid fa-headphones" style="color:#ffcc00;"></i> Freesound</button>`;
+  }
   html += '</div>';
   
   // Scale group
@@ -2125,9 +2135,40 @@ function clearFLMelodyPattern() {
 function updateFLPianoTrackSelect() {
   const sel = document.getElementById('flMelodyTrackSelect');
   if (!sel) return;
-  sel.innerHTML = FL.melodyTracks.map((t, i) => 
-    `<option value="${i}" ${i === FL.selectedMelodyTrack ? 'selected' : ''}>${t.label}</option>`
-  ).join('');
+  sel.innerHTML = FL.melodyTracks.map((t, i) => {
+    const hasSample = !!(FL.melodySamples && FL.melodySamples[t.id]);
+    const sampleName = FL.melodySampleMeta && FL.melodySampleMeta[t.id] ? FL.melodySampleMeta[t.id].name : '';
+    const label = hasSample ? '🎵 ' + t.label : t.label;
+    return `<option value="${i}" ${i === FL.selectedMelodyTrack ? 'selected' : ''}>${label}${hasSample ? ' · ' + sampleName.substring(0, 20) : ''}</option>`;
+  }).join('');
+}
+
+// ---- Freesound Sample Integration for Piano Roll ----
+// Opens the Sound Library panel to browse Freesound for the current melody track
+function flBrowseMelodySounds() {
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  window.__slMelodyTarget = track.id;
+  const panel = document.getElementById('flSoundLibrary');
+  const title = document.getElementById('flSlTitle');
+  if (panel) panel.style.display = 'flex';
+  if (title) title.textContent = '🔍 ' + track.label + ' Sample';
+  const input = document.getElementById('flSlSearchInput');
+  const searchBtn = document.getElementById('flSlSearchBtn');
+  if (input) {
+    input.value = track.label;
+    if (searchBtn) setTimeout(function() { searchBtn.click(); }, 100);
+  }
+}
+
+// Clears a loaded Freesound sample from the current melody track
+function flClearMelodySample() {
+  const track = FL.melodyTracks[FL.selectedMelodyTrack];
+  if (!track) return;
+  if (FL.melodySamples) delete FL.melodySamples[track.id];
+  if (FL.melodySampleMeta) delete FL.melodySampleMeta[track.id];
+  renderFLPianoRoll();
+  updateFLStatusBar('🗑 Sample cleared from ' + track.label);
 }
 
 // ---- Unified Mixer Renderer ----
