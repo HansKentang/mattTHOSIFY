@@ -40,7 +40,7 @@ const FL = {
   melodyNotes: {},
 
   // ---- Advanced Piano Roll Features ----
-  prTool: 'draw',       // 'draw' | 'select' | 'delete'
+  prTool: 'smart',      // 'smart' - one unified mode. Click=add/toggle, Right-click=delete, Drag=move
   prScale: null,        // null = off, or scale name from SCALES
   prRoot: 0,            // 0 = C, 1 = C#, etc.
   prZoom: 1,            // 0.5, 0.75, 1, 1.5, 2
@@ -1028,6 +1028,7 @@ function startFLBeat() {
     // Play melody notes scheduled for this step
     const melodyNotes = getFLMelodyNotes();
     FL.melodyTracks.forEach(mTrack => {
+      // Draw click-and-drag: add/remove notes on mouse enter
       const notes = melodyNotes[mTrack.id] || [];
       notes.forEach(note => {
         if (note.step === step) {
@@ -1469,9 +1470,10 @@ function renderFLPianoRoll() {
   let html = '<div class="fl-pr-toolbar">';
   // Tools group
   html += '<div class="fl-pr-tool-group" title="Tools">';
-  html += `<button class="fl-pr-tool-btn${FL.prTool === 'draw' ? ' active' : ''}" onclick="FL.prTool='draw';renderFLPianoRoll()" title="Draw (D) - Click to add/remove notes"><i class="fa-solid fa-pencil"></i></button>`;
-  html += `<button class="fl-pr-tool-btn${FL.prTool === 'select' ? ' active' : ''}" onclick="FL.prTool='select';renderFLPianoRoll()" title="Select (S) - Click notes to select, Delete to remove"><i class="fa-solid fa-arrow-pointer"></i></button>`;
-  html += `<button class="fl-pr-tool-btn${FL.prTool === 'delete' ? ' active' : ''}" onclick="FL.prTool='delete';renderFLPianoRoll()" title="Erase (E) - Click notes to delete"><i class="fa-solid fa-eraser"></i></button>`;
+  html += `<button class="fl-pr-tool-btn${FL.prTool === 'smart' ? ' active' : ''}" onclick="FL.prTool='smart';renderFLPianoRoll()" title="Smart Tool - Click to add/remove notes, Drag to draw, Delete/Backspace to erase"><i class="fa-solid fa-pencil"></i> Draw</button>`;
+  html += `<div style="width:1px;height:16px;background:#333;margin:0 2px;"></div>`;
+  html += `<button class="fl-pr-tool-btn" onclick="clearFLMelodyPattern();renderFLPianoRoll()" title="Clear all notes in this pattern"><i class="fa-solid fa-trash-can" style="color:#ff6b6b;"></i></button>`;
+  html += `<button class="fl-pr-tool-btn${FL.prTool === 'delete' ? ' active' : ''}" onclick="FL.prTool='delete';renderFLPianoRoll()" title="Erase (E) - Click notes to delete"><i class="fa-solid fa-eraser"></i> Erase</button>`;
   html += '</div>';
   
   // Scale group
@@ -1622,7 +1624,10 @@ function renderFLPianoRoll() {
           filter: brightness(${1 + (noteVel / 100) * 0.4});
           --note-vel: ${noteVel};
           --note-len: ${noteLen};
-        " ondblclick="event.stopPropagation(); flPRRemoveNote(${p}, ${s})">
+        " onmousedown="event.stopPropagation();flPRNoteMouseDown(event,${p},${s})" 
+           ondblclick="event.stopPropagation(); flPRRemoveNote(${p}, ${s})"
+           title="${noteName} · Vel: ${noteVel}% · Len: ${noteLen}">
+          <div class="fl-pr-note-vel-fill" style="height:${noteVel}%;background:rgba(255,255,255,0.12);"></div>
           ${labelToShow ? `<span class="fl-pr-note-label">${noteName}</span>` : `<span class="fl-pr-note-label" style="opacity:0.5;font-size:7px;">${noteName}</span>`}
           <div class="fl-pr-note-resize-handle" data-pitch="${p}" data-step="${s}" title="Drag to resize"></div>
         </div>`;

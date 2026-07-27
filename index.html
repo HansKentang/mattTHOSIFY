@@ -868,6 +868,10 @@
             <div class="fl-channel-rack-wrapper">
               <div class="fl-rack-header">
                 <span class="fl-rack-title"><i class="fa-solid fa-drum"></i> Channel Rack</span>
+                <div class="fl-rack-actions">
+                  <button class="fl-btn-sm" onclick="flCRUndo()" id="flCRUndoBtn" title="Undo (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button class="fl-btn-sm" onclick="flCRRedo()" id="flCRRedoBtn" title="Redo (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
                 <span class="fl-rack-steps-label"><span class="fl-beat-group-1">1</span><span class="fl-beat-group">2</span><span class="fl-beat-group">3</span><span class="fl-beat-group-4">4</span></span>
               </div>
               <div class="fl-channel-rack" id="flChannelRack">
